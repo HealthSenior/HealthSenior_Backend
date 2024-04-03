@@ -1,4 +1,4 @@
 package out4ider.healthsenior.domain;
 
-public class User {
+public class SeniorUser {
 }
