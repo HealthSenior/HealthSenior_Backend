@@ -1,13 +1,17 @@
 package out4ider.healthsenior.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString
 public class CommunityChatRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
