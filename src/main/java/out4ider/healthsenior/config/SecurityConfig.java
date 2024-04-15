@@ -52,10 +52,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http
                 .authorizeHttpRequests((auth)->auth
-                        .requestMatchers("/","/login/**","/oauth2/**").permitAll()
+                        .requestMatchers("/kakaoLogin").permitAll()
                         .anyRequest().authenticated());
-
-        //JWTFilter 추가해줘야함
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         return http.build();

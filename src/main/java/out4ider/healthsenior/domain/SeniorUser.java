@@ -25,6 +25,6 @@ public class SeniorUser {
     String email;
     Integer userAge;
     boolean isMale;
-
+    String oauth2Id;
     Role role;
 }
