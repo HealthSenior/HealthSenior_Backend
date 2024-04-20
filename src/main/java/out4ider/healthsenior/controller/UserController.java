@@ -1,5 +1,6 @@
 package out4ider.healthsenior.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ public class UserController {
     private final JWTUtil jwtUtil;
 
     @GetMapping("/kakaoLogin")
-    public String kakaoLogin(@RequestBody UserDto userDto) {
+    public String kakaoLogin(@RequestBody UserDto userDto, HttpServletResponse response) {
         String oauth2Id = "kakao" + userDto.getUserId();
         boolean isMale = false;
         if (userDto.getGender().equals("male")) {
@@ -38,8 +39,8 @@ public class UserController {
             seniorUserService.saveSeniorUser(seniorUser);
         } else {
             seniorUser = byOauth2Id.get();
-            //업데이트 해줘야함
         }
-        return jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 60*60*60L);
+        response.addHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 60*60*60L));
+        return "kakaoLogin success";
     }
 }
