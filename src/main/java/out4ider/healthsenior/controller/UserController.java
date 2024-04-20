@@ -21,9 +21,10 @@ public class UserController {
     private final SeniorUserService seniorUserService;
     private final JWTUtil jwtUtil;
 
-    @GetMapping("/kakaoLogin")
-    public String kakaoLogin(@RequestBody UserDto userDto, HttpServletResponse response) {
-        String oauth2Id = "kakao" + userDto.getUserId();
+    @GetMapping("/login")
+    public String login(@RequestBody UserDto userDto, HttpServletResponse response) {
+        String registrationId = userDto.getRegistrationId();
+        String oauth2Id = registrationId + userDto.getUserId();
         boolean isMale = false;
         if (userDto.getGender().equals("male")) {
             isMale = true;
@@ -41,6 +42,6 @@ public class UserController {
             seniorUser = byOauth2Id.get();
         }
         response.addHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 60*60*60L));
-        return "kakaoLogin success";
+        return registrationId+"Login success";
     }
 }
