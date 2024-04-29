@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChatRequest {
+public class ChatResponse {
     private Long userId;
     private String userName;
     private String content;

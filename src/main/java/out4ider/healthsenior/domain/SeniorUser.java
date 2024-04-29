@@ -27,4 +27,8 @@ public class SeniorUser {
     boolean isMale;
     String oauth2Id;
     Role role;
+
+    public void joinChat(CommunityChatRelation communityChatRelation){
+        this.communityChatRelation.add(communityChatRelation);
+    }
 }

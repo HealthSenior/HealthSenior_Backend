@@ -18,7 +18,7 @@ public class CommunityChatRoom {
     private Long chatRoomId;
 
     @OneToMany(mappedBy = "communityChatRoom", cascade = CascadeType.REMOVE)
-    private List<CommunityChatRelation> CommunityChatRelation;
+    private List<CommunityChatRelation> communityChatRelation;
 
     @Column
     private Integer maxUserCount;
@@ -30,14 +30,15 @@ public class CommunityChatRoom {
     private String description;
 
     @Column
-    private String centerName;
-
-    @Column
-    private Long masterId;
+    private String masterId;
 
     @Column
     private String sportKind;
 
     @Column
     private LocalDate startDate;
+
+    public void letInUser(CommunityChatRelation communityChatRelation){
+        this.communityChatRelation.add(communityChatRelation);
+    }
 }

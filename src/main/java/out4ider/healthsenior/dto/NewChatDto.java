@@ -10,6 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewChatDto {
-    String title;
-    String description;
+    private Integer maxUserCount;
+    private String title;
+    private String description;
+    private String sportKind;
 }
