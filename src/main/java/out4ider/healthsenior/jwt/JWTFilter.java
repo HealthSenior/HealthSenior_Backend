@@ -34,7 +34,7 @@ public class JWTFilter extends OncePerRequestFilter
         }
         String token = authorization.substring("Bearer ".length());
         if (jwtUtil.isExpired(token)) {
-
+            //trt-catch 문으로 잡아줘야 하고 토큰 재생성 해줘야 함
             System.out.println("token expired");
             filterChain.doFilter(request, response);
             return;
