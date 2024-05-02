@@ -94,4 +94,21 @@ public class ChatController {
         }
         return chatRoomList;
     }
+
+    @ResponseBody
+    @GetMapping("/chatroom/mylist")
+    public List<CommunityChatRoom> chatRoomMyList(Principal principal) throws Exception {
+        Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(principal.getName());
+        if (byOauth2Id.isEmpty()){
+            throw new Exception();
+        }
+        SeniorUser seniorUser = byOauth2Id.get();
+        List<CommunityChatRelation> relations = seniorUser.getCommunityChatRelation();
+        List<CommunityChatRoom> chatRoomList = new ArrayList<>();
+        for (CommunityChatRelation x : relations){
+            System.out.println(x.toString());
+            chatRoomList.add(x.getCommunityChatRoom());
+        }
+        return chatRoomList;
+    }
 }
