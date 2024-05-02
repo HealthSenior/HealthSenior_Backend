@@ -20,7 +20,7 @@ public class SeniorUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long userId;
     @OneToMany(mappedBy = "seniorUser", fetch = FetchType.LAZY)
-    List<CommunityChatRelation> communityChatRelation = new ArrayList<>();
+    List<CommunityChatRelation> communityChatRelation;
     String userName;
     String email;
     Integer userAge;

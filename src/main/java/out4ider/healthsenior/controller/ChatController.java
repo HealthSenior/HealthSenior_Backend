@@ -22,6 +22,7 @@ import out4ider.healthsenior.service.SeniorUserService;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,6 +59,7 @@ public class ChatController {
                 .maxUserCount(newChatDto.getMaxUserCount())
                 .sportKind(newChatDto.getSportKind())
                 .startDate(LocalDate.now())
+                .communityChatRelation(new ArrayList<>())
                 .build();
         communityChatRoomService.saveChatRoom(communityChatRoom);
         log.info(principal.getName());

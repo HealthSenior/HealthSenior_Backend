@@ -14,6 +14,7 @@ import out4ider.healthsenior.jwt.JWTUtil;
 import out4ider.healthsenior.service.SeniorUserService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -39,6 +40,7 @@ public class UserController {
                     .userAge(LocalDateTime.now().getYear() - Integer.parseInt(userDto.getBirthYear()) + 1)
                     .userName(userDto.getName())
                     .email(userDto.getEmail()).role(Role.USER).oauth2Id(oauth2Id)
+                    .communityChatRelation(new ArrayList<>())
                     .isMale(isMale).build();
             seniorUserService.saveSeniorUser(seniorUser);
         } else {
