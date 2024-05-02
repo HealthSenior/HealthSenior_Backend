@@ -7,8 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ChatRequest {
-    private Long userId;
+public class  ChatRequest {
+    private String oauth2Id;
     private String userName;
     private String content;
 }

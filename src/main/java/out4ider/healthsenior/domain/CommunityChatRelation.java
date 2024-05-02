@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
 public class CommunityChatRelation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

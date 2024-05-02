@@ -14,6 +14,7 @@ import out4ider.healthsenior.domain.CommunityChatRoom;
 import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.dto.ChatRequest;
 import out4ider.healthsenior.dto.ChatResponse;
+import out4ider.healthsenior.dto.ChatRoomResponseDto;
 import out4ider.healthsenior.dto.NewChatDto;
 import out4ider.healthsenior.service.ChatService;
 import out4ider.healthsenior.service.CommunityChatRelationService;
@@ -88,12 +89,29 @@ public class ChatController {
 
     @ResponseBody
     @GetMapping("/chatroom/list")
-    public List<CommunityChatRoom> chatRoomList(){
+    public List<ChatRoomResponseDto> chatRoomList(){
         List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList();
         for (CommunityChatRoom x : chatRoomList){
             System.out.println(x.toString());
         }
-        return chatRoomList;
+        List<ChatRoomResponseDto> chatRoomResponseList = new ArrayList<>();
+        for (CommunityChatRoom communityChatRoom : chatRoomList){
+            chatRoomResponseList.add(communityChatRoom.toResponseDto());
+        }
+        return chatRoomResponseList;
     }
 
+    @ResponseBody
+    @GetMapping("/chatroom/mylist")
+    public List<ChatRoomResponseDto> myChatRoomList(Principal principal) throws Exception {
+        String name = principal.getName();
+        Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(name);
+        if (byOauth2Id.isEmpty()) throw new Exception();
+        List<CommunityChatRelation> communityChatRelations = byOauth2Id.get().getCommunityChatRelation();
+        List<ChatRoomResponseDto> chatRoomResponseDtoList = new ArrayList<>();
+        for (CommunityChatRelation communityChatRelation: communityChatRelations){
+            chatRoomResponseDtoList.add(communityChatRelation.getCommunityChatRoom().toResponseDto());
+        }
+        return chatRoomResponseDtoList;
+    }
 }
