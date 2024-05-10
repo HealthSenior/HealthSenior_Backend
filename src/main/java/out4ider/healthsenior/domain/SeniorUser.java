@@ -27,8 +27,28 @@ public class SeniorUser {
     boolean isMale;
     String oauth2Id;
     Role role;
+    @OneToMany(mappedBy = "writer", fetch = FetchType.LAZY)
+    List<Article> articleList;
+
+    @OneToMany(mappedBy = "writer", fetch = FetchType.LAZY)
+    List<Comment> commentList;
+
+    @OneToMany(mappedBy = "seniorUser", fetch = FetchType.LAZY)
+    private List<LikeUserRelation> likeUserRelations;
 
     public void joinChat(CommunityChatRelation communityChatRelation){
         this.communityChatRelation.add(communityChatRelation);
+    }
+
+    public void createArticle(Article article){
+        this.articleList.add(article);
+    }
+
+    public void createComment(Comment comment){
+        this.commentList.add(comment);
+    }
+
+    public void createLikeUserRelation(LikeUserRelation likeUserRelation) {
+        this.likeUserRelations.add(likeUserRelation);
     }
 }

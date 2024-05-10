@@ -44,12 +44,15 @@ public class UserController {
                     .userName(userDto.getName())
                     .email(userDto.getEmail()).role(Role.USER).oauth2Id(oauth2Id)
                     .communityChatRelation(new ArrayList<>())
+                    .articleList(new ArrayList<>())
+                    .commentList(new ArrayList<>())
+                    .likeUserRelations(new ArrayList<>())
                     .isMale(isMale).build();
             seniorUserService.saveSeniorUser(seniorUser);
         } else {
             seniorUser = byOauth2Id.get();
         }
-        response.setHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 60*60*60L));
+        response.setHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 600*600*600L));
         return registrationId+"Login success";
     }
 }
