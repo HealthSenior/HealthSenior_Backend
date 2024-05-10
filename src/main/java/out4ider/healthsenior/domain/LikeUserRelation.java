@@ -6,17 +6,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
+@Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Getter
-public class CommunityChatRelation {
+public class LikeUserRelation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long communityChatRelationId;
+    private int id;
     @ManyToOne
     SeniorUser seniorUser;
     @ManyToOne
-    CommunityChatRoom communityChatRoom;
+    Article article;
+
 }
