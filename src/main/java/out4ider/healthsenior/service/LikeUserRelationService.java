@@ -13,4 +13,8 @@ public class LikeUserRelationService {
     public void saveLikeUserRelation(LikeUserRelation likeUserRelation) {
         likeUserRelationRepository.save(likeUserRelation);
     }
+
+    public void deleteLikeUserRelation(Long id) {
+        likeUserRelationRepository.deleteById(id);
+    }
 }

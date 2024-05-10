@@ -82,8 +82,8 @@ public class ArticleController {
         articleService.deleteArticleById(id);
     }
 
-    /*@PostMapping("/like/{id}")
-    public void likeArticle(@PathVariable Long id, Principal principal) throws Exception {
+    @PostMapping("/like/{id}")
+    public int likeArticle(@PathVariable Long id, Principal principal) throws Exception {
         Optional<Article> oa = articleService.getArticleById(id);
         if (oa.isEmpty()) {
             throw new Exception();
@@ -95,7 +95,14 @@ public class ArticleController {
             throw new Exception();
         }
         SeniorUser seniorUser = os.get();
-        //유저가 해당 글 따봉 눌렀는지 확인
+        int count = article.getLikeUserRelations().size();
+        List<LikeUserRelation> checked = article.getLikeUserRelations();
+        for(LikeUserRelation likeUserRelation : checked){
+            if(likeUserRelation.getSeniorUser().getUserId()==seniorUser.getUserId()){
+                likeUserRelationService.deleteLikeUserRelation(likeUserRelation.getId());
+                return count-1;
+            }
+        }
         LikeUserRelation likeUserRelation = LikeUserRelation.builder()
                 .seniorUser(seniorUser)
                 .article(article)
@@ -103,5 +110,6 @@ public class ArticleController {
         likeUserRelationService.saveLikeUserRelation(likeUserRelation);
         seniorUser.createLikeUserRelation(likeUserRelation);
         article.createLikeUserRelation(likeUserRelation);
-    }*/
+        return count+1;
+    }
 }

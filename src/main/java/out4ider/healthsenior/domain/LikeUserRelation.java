@@ -16,7 +16,7 @@ import java.util.List;
 public class LikeUserRelation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     @ManyToOne
     SeniorUser seniorUser;
     @ManyToOne
