@@ -53,7 +53,7 @@ public class ChatController {
 
     @ResponseBody
     @PostMapping("/chatroom/newchat")
-    public CommunityChatRoom makeChat(@RequestBody NewChatDto newChatDto, Principal principal) throws Exception {
+    public void makeChat(@RequestBody NewChatDto newChatDto, Principal principal) throws Exception {
         CommunityChatRoom communityChatRoom = CommunityChatRoom.builder()
                 .title(newChatDto.getTitle())
                 .description(newChatDto.getDescription())
@@ -71,20 +71,18 @@ public class ChatController {
         }
         SeniorUser seniorUser = byOauth2Id.get();
         communityChatRelationService.newChat(seniorUser,communityChatRoom);
-        return communityChatRoom;
     }
 
     @ResponseBody
     @PostMapping("/chatroom/joinchat/{chatRoom}")
-    public CommunityChatRelation joinChat(@PathVariable Long chatRoom, Principal principal) throws Exception {
+    public void joinChat(@PathVariable Long chatRoom, Principal principal) throws Exception {
         Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(principal.getName());
         if (byOauth2Id.isEmpty()){
             throw new Exception();
         }
         CommunityChatRoom theChatRoom = communityChatRoomService.getChatRoom(chatRoom);
         SeniorUser seniorUser = byOauth2Id.get();
-        CommunityChatRelation chatRelation = communityChatRelationService.newChat(seniorUser, theChatRoom);
-        return chatRelation;
+        communityChatRelationService.newChat(seniorUser, theChatRoom);
     }
 
     @ResponseBody

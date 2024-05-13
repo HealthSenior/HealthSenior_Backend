@@ -69,7 +69,7 @@ public class ArticleController {
         return saved;
     }*/
 
-    @DeleteMapping("/delete{id}")
+    @DeleteMapping("/delete/{id}")
     public void deleteArticle(@PathVariable Long id, Principal principal) throws Exception {
         Optional<Article> op = articleService.getArticleById(id);
         if (op.isEmpty()) {
