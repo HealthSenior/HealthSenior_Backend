@@ -1,5 +1,6 @@
 package out4ider.healthsenior.controller;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ public class ArticleController {
     private final LikeUserRelationService likeUserRelationService;
 
     @PostMapping("/create")
+    @Transactional
     public void createArticle(@RequestBody NewArticleDto newArticleDto, Principal principal) throws Exception {
         String name = principal.getName();
         Optional<SeniorUser> op = seniorUserService.findByOauth2Id(name);
@@ -83,6 +85,7 @@ public class ArticleController {
     }
 
     @PostMapping("/like/{id}")
+    @Transactional
     public int likeArticle(@PathVariable Long id, Principal principal) throws Exception {
         Optional<Article> oa = articleService.getArticleById(id);
         if (oa.isEmpty()) {

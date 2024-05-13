@@ -1,6 +1,7 @@
 package out4ider.healthsenior.domain;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,14 +41,15 @@ public class SeniorUser {
         this.communityChatRelation.add(communityChatRelation);
     }
 
+    @Transactional
     public void createArticle(Article article){
         this.articleList.add(article);
     }
-
+    @Transactional
     public void createComment(Comment comment){
         this.commentList.add(comment);
     }
-
+    @Transactional
     public void createLikeUserRelation(LikeUserRelation likeUserRelation) {
         this.likeUserRelations.add(likeUserRelation);
     }

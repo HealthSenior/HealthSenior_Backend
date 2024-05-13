@@ -1,5 +1,6 @@
 package out4ider.healthsenior.controller;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,7 @@ public class CommentController {
     }
 
     @PostMapping("/create/{id}")
+    @Transactional
     public int createComment(@PathVariable Long id, @RequestBody NewCommentDto newCommentDto, Principal principal) throws Exception {
         Optional<Article> oa = articleService.getArticleById(id);
         if(oa.isEmpty()) {
