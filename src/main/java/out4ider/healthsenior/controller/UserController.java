@@ -6,12 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.domain.UserFcmToken;
+import out4ider.healthsenior.dto.TokenLoginResponseDto;
 import out4ider.healthsenior.dto.UserDto;
 import out4ider.healthsenior.enums.Role;
 import out4ider.healthsenior.jwt.JWTUtil;
 import out4ider.healthsenior.repository.UserFcmRepository;
 import out4ider.healthsenior.service.SeniorUserService;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
@@ -32,6 +34,16 @@ public class UserController {
         log.info("fcm-token = {}",fcm_token);
         String registrationId = userDto.getRegistrationId();
         String oauth2Id = registrationId + userDto.getUserId();
+        UserFcmToken userFcm;
+        Optional<UserFcmToken> fcmById = userFcmRepository.findById(oauth2Id);
+        if (fcmById.isEmpty()){
+            userFcm = new UserFcmToken(oauth2Id,fcm_token);
+        }
+        else{
+            userFcm = fcmById.get();
+            userFcm.updateFcmToken(fcm_token);
+        }
+        userFcmRepository.save(userFcm);
         boolean isMale = false;
         if (userDto.getGender().equals("m")) {
             isMale = true;
@@ -54,5 +66,20 @@ public class UserController {
         }
         response.setHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 600*600*600L));
         return registrationId+"Login success";
+    }
+
+    @GetMapping("/token-login")
+    public TokenLoginResponseDto tokenLogin(Principal principal) throws Exception {
+        String name = principal.getName();
+        Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(name);
+        if (byOauth2Id.isEmpty()) throw new Exception();
+        SeniorUser seniorUser = byOauth2Id.get();
+        TokenLoginResponseDto requestDto = TokenLoginResponseDto.builder()
+                .gender(seniorUser.isMale())
+                .age(seniorUser.getUserAge())
+                .email(seniorUser.getEmail())
+                .name(seniorUser.getUserName())
+                .build();
+        return requestDto;
     }
 }

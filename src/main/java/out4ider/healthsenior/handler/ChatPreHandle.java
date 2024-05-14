@@ -8,9 +8,12 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
+import out4ider.healthsenior.dto.FcmSendDto;
 import out4ider.healthsenior.jwt.JWTUtil;
+import out4ider.healthsenior.service.FcmService;
 import out4ider.healthsenior.service.RedisService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +23,7 @@ import java.util.Map;
 public class ChatPreHandle implements ChannelInterceptor {
     private final RedisService redisService;
     private final JWTUtil jwtUtil;
+    private final FcmService fcmService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -42,6 +46,13 @@ public class ChatPreHandle implements ChannelInterceptor {
             List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
             for (String token : allTokenBySessionId){
                 //fcm으로 메시지 전송
+                try {
+                    fcmService.sendMessageTo(FcmSendDto.builder()
+                                    .body("ss")
+                                    .title("test")
+                                    .build(),token);
+                } catch (IOException e) {
+                }
             }
         }
         return message;

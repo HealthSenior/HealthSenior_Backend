@@ -36,4 +36,4 @@ application-secrets.properties
 
 ### VS Code ###
 .vscode/
-/src/main/resources/firebase/healthysenior-7b948-firebase-adminsdk-15npk-ce19c6d61c.json
+/src/main/resources/firebase/fcm-key.json

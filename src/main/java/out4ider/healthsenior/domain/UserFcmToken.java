@@ -18,4 +18,8 @@ public class UserFcmToken {
     @Id
     private String oauth2Id;
     private String fcmToken;
+
+    public void updateFcmToken(String fcmToken){
+        this.fcmToken = fcmToken;
+    }
 }

@@ -16,10 +16,7 @@ import out4ider.healthsenior.dto.ChatRequest;
 import out4ider.healthsenior.dto.ChatResponse;
 import out4ider.healthsenior.dto.ChatRoomResponseDto;
 import out4ider.healthsenior.dto.NewChatDto;
-import out4ider.healthsenior.service.ChatService;
-import out4ider.healthsenior.service.CommunityChatRelationService;
-import out4ider.healthsenior.service.CommunityChatRoomService;
-import out4ider.healthsenior.service.SeniorUserService;
+import out4ider.healthsenior.service.*;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -35,6 +32,7 @@ public class ChatController {
     private final CommunityChatRelationService communityChatRelationService;
     private final SeniorUserService seniorUserService;
     private final ChatService chatService;
+    private final RedisService redisService;
 
     @ResponseBody
     @GetMapping("/connection_test")
@@ -63,7 +61,7 @@ public class ChatController {
                 .startDate(LocalDate.now())
                 .communityChatRelation(new ArrayList<>())
                 .build();
-        communityChatRoomService.saveChatRoom(communityChatRoom);
+        CommunityChatRoom newChatRoom = communityChatRoomService.saveChatRoom(communityChatRoom);
         log.info(principal.getName());
         Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(principal.getName());
         if (byOauth2Id.isEmpty()){
@@ -71,12 +69,14 @@ public class ChatController {
         }
         SeniorUser seniorUser = byOauth2Id.get();
         communityChatRelationService.newChat(seniorUser,communityChatRoom);
+        String fcmToken = seniorUserService.getFcmToken(principal.getName());
+        redisService.putToken(String.valueOf(newChatRoom.getChatRoomId()), principal.getName(), fcmToken);
         return communityChatRoom;
     }
 
     @ResponseBody
     @PostMapping("/chatroom/joinchat/{chatRoom}")
-    public CommunityChatRelation joinChat(@PathVariable Long chatRoom, Principal principal) throws Exception {
+    public void joinChat(@PathVariable Long chatRoom, Principal principal) throws Exception {
         Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(principal.getName());
         if (byOauth2Id.isEmpty()){
             throw new Exception();
@@ -84,7 +84,8 @@ public class ChatController {
         CommunityChatRoom theChatRoom = communityChatRoomService.getChatRoom(chatRoom);
         SeniorUser seniorUser = byOauth2Id.get();
         CommunityChatRelation chatRelation = communityChatRelationService.newChat(seniorUser, theChatRoom);
-        return chatRelation;
+        String fcmToken = seniorUserService.getFcmToken(principal.getName());
+        redisService.putToken(String.valueOf(chatRoom), principal.getName(), fcmToken);
     }
 
     @ResponseBody
