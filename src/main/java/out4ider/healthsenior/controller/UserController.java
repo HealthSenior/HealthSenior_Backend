@@ -11,6 +11,7 @@ import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.dto.UserDto;
 import out4ider.healthsenior.enums.Role;
 import out4ider.healthsenior.jwt.JWTUtil;
+import out4ider.healthsenior.service.RefreshTokenService;
 import out4ider.healthsenior.service.SeniorUserService;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class UserController {
 
     private final SeniorUserService seniorUserService;
     private final JWTUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
     public String login(@RequestBody UserDto userDto, HttpServletResponse response) {
@@ -49,7 +51,10 @@ public class UserController {
         } else {
             seniorUser = byOauth2Id.get();
         }
-        response.setHeader("Authorization", "Bearer "+jwtUtil.createToken(oauth2Id, seniorUser.getRole(), 600*600*600L));
+        response.setHeader("Authorization", "Bearer "+jwtUtil.createToken("access", oauth2Id, seniorUser.getRole(), 600000L));
+        String refreshToken = jwtUtil.createToken("refresh", oauth2Id, seniorUser.getRole(), 86400000L);
+        response.setHeader("Refresh", refreshToken);
+        refreshTokenService.addRefreshToken(oauth2Id, refreshToken, 86400000L);
         return registrationId+"Login success";
     }
 }
