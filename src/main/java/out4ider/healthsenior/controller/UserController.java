@@ -45,7 +45,7 @@ public class UserController {
         }
         userFcmRepository.save(userFcm);
         boolean isMale = false;
-        if (userDto.getGender().equals("m")) {
+        if (userDto.getGender()==null || userDto.getGender().equals("m")) {
             isMale = true;
         }
         Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(oauth2Id);
