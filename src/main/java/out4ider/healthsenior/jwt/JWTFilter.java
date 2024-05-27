@@ -29,11 +29,17 @@ public class JWTFilter extends OncePerRequestFilter
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authorization = request.getHeader("Authorization");
-        String refresh =null;
-        refresh=request.getHeader("Refresh");
         if(authorization == null || !authorization.startsWith("Bearer ")){
-            System.out.println("token null");
-            filterChain.doFilter(request, response);
+            if(!request.getContextPath().equals("/reissue")) {
+                System.out.println("access token null");
+                filterChain.doFilter(request, response);
+            }
+            else{
+                System.out.println("access token empty");
+                PrintWriter writer = response.getWriter();
+                writer.print("access token empty");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            }
             return;
         }
         String token = authorization.substring("Bearer ".length());
@@ -42,10 +48,15 @@ public class JWTFilter extends OncePerRequestFilter
             jwtUtil.isExpired(token);
         }
         catch(ExpiredJwtException e){
-            System.out.println("token expired");
-            PrintWriter writer = response.getWriter();
-            writer.print("access token expired");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            if(!request.getContextPath().equals("/reissue")) {
+                System.out.println("access token expired");
+                PrintWriter writer = response.getWriter();
+                writer.print("access token expired");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            else {
+                filterChain.doFilter(request, response);
+            }
             return;
         }
 
