@@ -1,5 +1,7 @@
 package out4ider.healthsenior.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -8,12 +10,17 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
+import out4ider.healthsenior.domain.ChatMessage;
+import out4ider.healthsenior.dto.ChatRequest;
 import out4ider.healthsenior.dto.FcmSendDto;
 import out4ider.healthsenior.jwt.JWTUtil;
+import out4ider.healthsenior.service.ChatMessageService;
 import out4ider.healthsenior.service.FcmService;
 import out4ider.healthsenior.service.RedisService;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -24,10 +31,13 @@ public class ChatPreHandle implements ChannelInterceptor {
     private final RedisService redisService;
     private final JWTUtil jwtUtil;
     private final FcmService fcmService;
+    private final ChatMessageService chatMessageService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        ChatRequest chatRequest = null;
+        ObjectMapper objectMapper = new ObjectMapper();
         String sessionId  = accessor.getSessionId();
         if (StompCommand.CONNECT == accessor.getCommand()) { // websocket 연결요청
             String jwtToken = accessor.getFirstNativeHeader("authorization");
@@ -38,18 +48,32 @@ public class ChatPreHandle implements ChannelInterceptor {
 
             String token = jwtToken.substring(7);
             String oauth2Id = jwtUtil.getUsername(token);
+
             log.info("ID : {} ", oauth2Id);
             redisService.enterChatRoom(sessionId,roomNumber,oauth2Id);
         }
         else if (StompCommand.SEND == accessor.getCommand()){
-            log.info("send message! : {}", message.getPayload().toString());
+            Object payload = message.getPayload();
+            if (payload instanceof byte[]) {
+                String content = new String((byte[]) payload, StandardCharsets.UTF_8);
+                try {
+                     chatRequest = objectMapper.readValue(content, ChatRequest.class);
+                } catch (JsonProcessingException e) {
+                    log.error("바꿀수없음");
+                    throw new RuntimeException(e);
+                }
+                System.out.println("Message Content: " + chatRequest.toString());
+            } else {
+                System.out.println("Message payload is not a byte array: " + payload);
+            }
             List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
             for (String token : allTokenBySessionId){
                 //fcm으로 메시지 전송
                 try {
+                    log.info("send FCM to {}", token);
                     fcmService.sendMessageTo(FcmSendDto.builder()
-                                    .body("ss")
-                                    .title("test")
+                                    .body(chatRequest.getContent())
+                                    .title(chatRequest.getUserName())
                                     .build(),token);
                 } catch (IOException e) {
                 }

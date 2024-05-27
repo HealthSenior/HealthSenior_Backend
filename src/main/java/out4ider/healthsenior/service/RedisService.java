@@ -9,8 +9,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import out4ider.healthsenior.domain.CommunityChatRelation;
+import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.domain.UserFcmToken;
 import out4ider.healthsenior.repository.CommunityChatRelationRepository;
+import out4ider.healthsenior.repository.SeniorUserRepository;
 import out4ider.healthsenior.repository.UserFcmRepository;
 
 import java.util.ArrayList;
@@ -26,6 +28,8 @@ public class RedisService {
     private final StringRedisTemplate redisTemplate;
     private final CommunityChatRelationRepository communityChatRelationRepository;
     private final UserFcmRepository userFcmRepository;
+    private final SeniorUserRepository seniorUserRepository;
+
 
     public void putToken(String roomNumber,String oauth2Id,String token){
         HashOperations<String, Object, Object> stringObjectObjectHashOperations = redisTemplate.opsForHash();
@@ -66,6 +70,21 @@ public class RedisService {
         stringObjectObjectHashOperations.put("roomNumber",sessionId,roomNumber);
         stringObjectObjectHashOperations.put("oauth2Id",sessionId,oauth2Id);
         stringObjectObjectHashOperations.put("token",sessionId,token);
+    }
+
+    public void updateUserFcmToken(String oauth2Id, String fcmToken){
+        Optional<SeniorUser> seniorUser = seniorUserRepository.findByOauth2Id(oauth2Id);
+        if (seniorUser.isPresent()){
+            SeniorUser user = seniorUser.get();
+            HashOperations<String, Object, Object> hashOps = redisTemplate.opsForHash();
+            List<CommunityChatRelation> communityChatRelations = user.getCommunityChatRelation();
+            for (CommunityChatRelation chatRelation : communityChatRelations){
+                hashOps.put(String.valueOf(chatRelation.getCommunityChatRoom().getChatRoomId()),oauth2Id,fcmToken);
+            }
+        }
+        else{
+            log.error("updateUserFcmToken method error");
+        }
     }
 
     @PostConstruct

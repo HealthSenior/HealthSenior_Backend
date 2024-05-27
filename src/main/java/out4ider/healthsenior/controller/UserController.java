@@ -11,6 +11,7 @@ import out4ider.healthsenior.dto.UserDto;
 import out4ider.healthsenior.enums.Role;
 import out4ider.healthsenior.jwt.JWTUtil;
 import out4ider.healthsenior.repository.UserFcmRepository;
+import out4ider.healthsenior.service.RedisService;
 import out4ider.healthsenior.service.SeniorUserService;
 
 import java.security.Principal;
@@ -27,6 +28,7 @@ public class UserController {
     private final SeniorUserService seniorUserService;
     private final JWTUtil jwtUtil;
     private final UserFcmRepository userFcmRepository;
+    private final RedisService redisService;
 
     @PostMapping("/login")
     public String login(@RequestBody UserDto userDto, @RequestHeader Map<String,String> headers, HttpServletResponse response) {
@@ -41,7 +43,10 @@ public class UserController {
         }
         else{
             userFcm = fcmById.get();
-            userFcm.updateFcmToken(fcm_token);
+            if (!userFcm.getFcmToken().equals(fcm_token)) {
+                userFcm.updateFcmToken(fcm_token);
+                redisService.updateUserFcmToken(oauth2Id,fcm_token);
+            }
         }
         userFcmRepository.save(userFcm);
         boolean isMale = false;
