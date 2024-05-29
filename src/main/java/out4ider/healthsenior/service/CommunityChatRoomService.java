@@ -18,8 +18,8 @@ public class CommunityChatRoomService {
         return saved;
     }
 
-    public List<CommunityChatRoom> getChatRoomList(){
-        List<CommunityChatRoom> allChatRoom = communityChatRoomRepository.findAll();
+    public List<CommunityChatRoom> getChatRoomList(List<Long> chatRoomIds){
+        List<CommunityChatRoom> allChatRoom = communityChatRoomRepository.findByChatRoomIdNotIn(chatRoomIds);
         return allChatRoom;
     }
 

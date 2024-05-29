@@ -46,13 +46,11 @@ public class RedisService {
         return values;
     }
 
-    public List<String> getAllOauth2IdBySessionId(String sessionId){
+    public Map<Object, Object> getAllOauth2IdAndTokenBySessionId(String sessionId){
         HashOperations<String, Object, Object> stringObjectObjectHashOperations = redisTemplate.opsForHash();
         String roomNumber = (String)stringObjectObjectHashOperations.get("roomNumber", sessionId);
         Map<Object, Object> entries = stringObjectObjectHashOperations.entries(roomNumber);
-        List<String> values = entries.keySet().stream().map(p->(String)p).collect(Collectors.toList());
-        log.info("allTokens : {}", values.toString());
-        return values;
+        return entries;
     }
 
 

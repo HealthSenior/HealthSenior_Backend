@@ -10,6 +10,8 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 import out4ider.healthsenior.domain.ChatMessage;
 import out4ider.healthsenior.dto.ChatRequest;
 import out4ider.healthsenior.dto.FcmSendDto;
@@ -32,6 +34,7 @@ public class ChatPreHandle implements ChannelInterceptor {
     private final JWTUtil jwtUtil;
     private final FcmService fcmService;
     private final ChatMessageService chatMessageService;
+    private final Map<String, WebSocketSession> webSocketSessionMap;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -71,16 +74,29 @@ public class ChatPreHandle implements ChannelInterceptor {
                     .content(chatRequest.getContent())
                     .oauth2Id(chatRequest.getOauth2Id())
                     .messageTime(LocalDateTime.now()).build());
-            List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
-            for (String token : allTokenBySessionId){
-                //fcm으로 메시지 전송
-                try {
-                    log.info("send FCM to {}", token);
-                    fcmService.sendMessageTo(FcmSendDto.builder()
-                                    .body(chatRequest.getContent())
-                                    .title(chatRequest.getUserName())
-                                    .build(),token);
-                } catch (IOException e) {
+
+//            List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
+            Map<Object, Object> allOauth2IdAndTokenBySessionId = redisService.getAllOauth2IdAndTokenBySessionId(sessionId);
+            for (Map.Entry<Object,Object> entry : allOauth2IdAndTokenBySessionId.entrySet()){
+                WebSocketSession sockSession = webSocketSessionMap.get(entry.getKey());
+                if (sockSession == null) { //fcm으로 메시지 전송
+                    try {
+                        log.info("send FCM to {}", (String)entry.getValue());
+                        fcmService.sendMessageTo(FcmSendDto.builder()
+                                .body(chatRequest.getContent())
+                                .title(chatRequest.getUserName())
+                                .build(), (String)entry.getValue());
+                    } catch (IOException e) {
+                        log.error("FCM send failed");
+                    }
+                }
+                else{
+                    try {
+                        sockSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatRequest)));
+                    } catch (IOException e) {
+                        log.error("socket send failed");
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         }

@@ -77,12 +77,20 @@ public class ChatController {
     @ResponseBody
     @PostMapping("/chatroom/joinchat/{chatRoom}")
     public void joinChat(@PathVariable Long chatRoom, Principal principal) throws Exception {
+        log.info("join chat room : {}", chatRoom);
         Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(principal.getName());
         if (byOauth2Id.isEmpty()){
             throw new Exception();
         }
         CommunityChatRoom theChatRoom = communityChatRoomService.getChatRoom(chatRoom);
         SeniorUser seniorUser = byOauth2Id.get();
+        List<CommunityChatRelation> communityChatRelation = theChatRoom.getCommunityChatRelation();
+        //이후 최적화 필요 할듯
+        for (CommunityChatRelation chatRel : communityChatRelation){
+            if (chatRel.getSeniorUser().getOauth2Id().equals(seniorUser.getOauth2Id())){
+                return ;
+            }
+        }
         CommunityChatRelation chatRelation = communityChatRelationService.newChat(seniorUser, theChatRoom);
         String fcmToken = seniorUserService.getFcmToken(principal.getName());
         redisService.putToken(String.valueOf(chatRoom), principal.getName(), fcmToken);
@@ -90,10 +98,19 @@ public class ChatController {
 
     @ResponseBody
     @GetMapping("/chatroom/list")
-    public List<ChatRoomResponseDto> chatRoomList(){
-        List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList();
+    public List<ChatRoomResponseDto> chatRoomList(Principal principal) throws Exception {
+        List<Long> chatRoomIds = new ArrayList<>();
+        Optional<SeniorUser> os = seniorUserService.findByOauth2Id(principal.getName());
+        if(os.isEmpty()){
+            throw new Exception();
+        }
+        SeniorUser seniorUser = os.get();
+        for(CommunityChatRelation communityChatRelation : seniorUser.getCommunityChatRelation()){
+            chatRoomIds.add(communityChatRelation.getCommunityChatRoom().getChatRoomId());
+        }
+        List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList(chatRoomIds);
         for (CommunityChatRoom x : chatRoomList){
-            log.info("chat room : ",x.toString());
+            System.out.println(x.toString());
         }
         List<ChatRoomResponseDto> chatRoomResponseList = new ArrayList<>();
         for (CommunityChatRoom communityChatRoom : chatRoomList){
