@@ -69,17 +69,18 @@ public class ChatPreHandle implements ChannelInterceptor {
                 log.info("Message payload is not a byte array");
             }
             //메시지 시간을 클라이언트에서 받아올지, 여기서 설정할지, 아니면 다른 방식으로 설정할지 고민이 필요
-            chatMessageService.saveChat(ChatMessage.builder()
-                    .userName(chatRequest.getUserName())
-                    .content(chatRequest.getContent())
-                    .oauth2Id(chatRequest.getOauth2Id())
-                    .messageTime(LocalDateTime.now()).build());
+
 
 //            List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
             Map<Object, Object> allOauth2IdAndTokenBySessionId = redisService.getAllOauth2IdAndTokenBySessionId(sessionId);
             for (Map.Entry<Object,Object> entry : allOauth2IdAndTokenBySessionId.entrySet()){
                 WebSocketSession sockSession = webSocketSessionMap.get(entry.getKey());
                 if (sockSession == null) { //fcm으로 메시지 전송
+                    chatMessageService.saveChat(ChatMessage.builder()
+                            .userName(chatRequest.getUserName())
+                            .content(chatRequest.getContent())
+                            .oauth2Id(chatRequest.getOauth2Id())
+                            .messageTime(LocalDateTime.now()).build());
                     try {
                         log.info("send FCM to {}", (String)entry.getValue());
                         fcmService.sendMessageTo(FcmSendDto.builder()
