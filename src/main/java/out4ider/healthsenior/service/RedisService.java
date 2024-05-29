@@ -46,6 +46,16 @@ public class RedisService {
         return values;
     }
 
+    public List<String> getAllOauth2IdBySessionId(String sessionId){
+        HashOperations<String, Object, Object> stringObjectObjectHashOperations = redisTemplate.opsForHash();
+        String roomNumber = (String)stringObjectObjectHashOperations.get("roomNumber", sessionId);
+        Map<Object, Object> entries = stringObjectObjectHashOperations.entries(roomNumber);
+        List<String> values = entries.keySet().stream().map(p->(String)p).collect(Collectors.toList());
+        log.info("allTokens : {}", values.toString());
+        return values;
+    }
+
+
     public void deleteTokenOfChatRoomUser(String roomNumber, String oauth2Id){
         HashOperations<String, Object, Object> stringObjectObjectHashOperations = redisTemplate.opsForHash();
         stringObjectObjectHashOperations.delete(roomNumber,oauth2Id);
@@ -57,7 +67,7 @@ public class RedisService {
         String roomNumber = (String)stringObjectObjectHashOperations.get("roomNumber", sessionId);
         String oauth2Id = (String)stringObjectObjectHashOperations.get("oauth2Id", sessionId);
         String token = (String)stringObjectObjectHashOperations.get("token", sessionId);
-        System.out.println("roomNumber : " + roomNumber + "oauth2Id:" + oauth2Id + "token : " + token);
+        log.info("roomNumber : {}, oauth2Id : {}, token : {}", roomNumber, oauth2Id, token);
         stringObjectObjectHashOperations.put(roomNumber,oauth2Id,token);
         log.info("quitChatRoom : {}", oauth2Id);
     }
@@ -65,7 +75,7 @@ public class RedisService {
     public void enterChatRoom(String sessionId,String roomNumber,String oauth2Id){
         HashOperations<String, Object, Object> stringObjectObjectHashOperations = redisTemplate.opsForHash();
         String token = (String)stringObjectObjectHashOperations.get(roomNumber, oauth2Id);
-        System.out.println("enter token : " + token);
+        log.info("enter token : {}", token);
         stringObjectObjectHashOperations.delete(roomNumber,oauth2Id);
         stringObjectObjectHashOperations.put("roomNumber",sessionId,roomNumber);
         stringObjectObjectHashOperations.put("oauth2Id",sessionId,oauth2Id);
@@ -89,7 +99,7 @@ public class RedisService {
 
     @PostConstruct
     public void init(){
-        System.out.println("------------------initializing!!--------------");
+        log.info("------------------initializing!!--------------");
         List<CommunityChatRelation> all = communityChatRelationRepository.findAll();
         redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
         HashOperations<String, Object, Object> stringObjectObjectHashOperations = redisTemplate.opsForHash();
@@ -103,6 +113,6 @@ public class RedisService {
                 stringObjectObjectHashOperations.put(String.valueOf(chatRoomId),oauth2Id,fcmToken);
             }
         }
-        System.out.println("------------------initialized!!--------------");
+        log.info("------------------initialized!!--------------");
     }
 }

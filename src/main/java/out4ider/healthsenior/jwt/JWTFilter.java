@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import out4ider.healthsenior.enums.Role;
 
 import java.io.IOException;
 
+@Slf4j
 public class JWTFilter extends OncePerRequestFilter
 {
     private final JWTUtil jwtUtil;
@@ -28,14 +30,14 @@ public class JWTFilter extends OncePerRequestFilter
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authorization = request.getHeader("Authorization");
         if(authorization == null || !authorization.startsWith("Bearer ")){
-            System.out.println("token null");
+            log.info("token null");
             filterChain.doFilter(request, response);
             return;
         }
         String token = authorization.substring("Bearer ".length());
         if (jwtUtil.isExpired(token)) {
             //trt-catch 문으로 잡아줘야 하고 토큰 재생성 해줘야 함
-            System.out.println("token expired");
+            log.info("token expired");
             filterChain.doFilter(request, response);
             return;
         }

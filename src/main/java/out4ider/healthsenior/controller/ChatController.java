@@ -37,7 +37,7 @@ public class ChatController {
     @ResponseBody
     @GetMapping("/connection_test")
     public String test(){
-        System.out.println("!");
+        log.info("connection success");
         return "ok";
     }
 
@@ -45,7 +45,7 @@ public class ChatController {
     @SendTo("/subscribe_room/{chatRoomId}")
     public ChatResponse chat(@DestinationVariable Long chatRoomId, ChatRequest chatRequest){
         ChatResponse chatResponse = chatService.chatRequestToResponse(chatRequest);
-        System.out.println(chatResponse.getContent());
+        log.info("send chat : {}",chatResponse.getContent());
         return chatResponse;
     }
 
@@ -93,7 +93,7 @@ public class ChatController {
     public List<ChatRoomResponseDto> chatRoomList(){
         List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList();
         for (CommunityChatRoom x : chatRoomList){
-            System.out.println(x.toString());
+            log.info("chat room : ",x.toString());
         }
         List<ChatRoomResponseDto> chatRoomResponseList = new ArrayList<>();
         for (CommunityChatRoom communityChatRoom : chatRoomList){

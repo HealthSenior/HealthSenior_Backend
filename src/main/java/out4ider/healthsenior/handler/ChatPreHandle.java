@@ -62,9 +62,8 @@ public class ChatPreHandle implements ChannelInterceptor {
                     log.error("바꿀수없음");
                     throw new RuntimeException(e);
                 }
-                System.out.println("Message Content: " + chatRequest.toString());
             } else {
-                System.out.println("Message payload is not a byte array: " + payload);
+                log.info("Message payload is not a byte array");
             }
             //메시지 시간을 클라이언트에서 받아올지, 여기서 설정할지, 아니면 다른 방식으로 설정할지 고민이 필요
             chatMessageService.saveChat(ChatMessage.builder()
