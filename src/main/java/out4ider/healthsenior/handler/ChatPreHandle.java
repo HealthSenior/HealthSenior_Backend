@@ -74,13 +74,22 @@ public class ChatPreHandle implements ChannelInterceptor {
 //            List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
             Map<Object, Object> allOauth2IdAndTokenBySessionId = redisService.getAllOauth2IdAndTokenBySessionId(sessionId);
             for (Map.Entry<Object,Object> entry : allOauth2IdAndTokenBySessionId.entrySet()){
-                WebSocketSession sockSession = webSocketSessionMap.get(entry.getKey());
+                WebSocketSession sockSession = webSocketSessionMap.get((String)entry.getKey());
                 if (sockSession == null) { //fcm으로 메시지 전송
+                    log.info("No session! saving in db...");
                     chatMessageService.saveChat(ChatMessage.builder()
                             .userName(chatRequest.getUserName())
                             .content(chatRequest.getContent())
                             .oauth2Id(chatRequest.getOauth2Id())
                             .messageTime(LocalDateTime.now()).build());
+                }
+                else{
+                    try {
+                        sockSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatRequest)));
+                    } catch (IOException e) {
+                        log.error("socket send failed");
+                        throw new RuntimeException(e);
+                    }
                     try {
                         log.info("send FCM to {}", (String)entry.getValue());
                         fcmService.sendMessageTo(FcmSendDto.builder()
@@ -89,14 +98,6 @@ public class ChatPreHandle implements ChannelInterceptor {
                                 .build(), (String)entry.getValue());
                     } catch (IOException e) {
                         log.error("FCM send failed");
-                    }
-                }
-                else{
-                    try {
-                        sockSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatRequest)));
-                    } catch (IOException e) {
-                        log.error("socket send failed");
-                        throw new RuntimeException(e);
                     }
                 }
             }
