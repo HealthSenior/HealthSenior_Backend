@@ -56,6 +56,8 @@ public class ChatPreHandle implements ChannelInterceptor {
             redisService.enterChatRoom(sessionId,roomNumber,oauth2Id);
         }
         else if (StompCommand.SEND == accessor.getCommand()){
+            //test
+            long beforeTime = System.currentTimeMillis();
             Object payload = message.getPayload();
             if (payload instanceof byte[]) {
                 String content = new String((byte[]) payload, StandardCharsets.UTF_8);
@@ -101,6 +103,9 @@ public class ChatPreHandle implements ChannelInterceptor {
                     }
                 }
             }
+            //test
+            long afterTime = System.currentTimeMillis();
+            log.info("time-spent-millis : {}",afterTime - beforeTime);
         }
         return message;
     }
