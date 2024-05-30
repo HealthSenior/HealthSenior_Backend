@@ -16,6 +16,7 @@ import out4ider.healthsenior.domain.ChatMessage;
 import out4ider.healthsenior.dto.ChatRequest;
 import out4ider.healthsenior.dto.FcmSendDto;
 import out4ider.healthsenior.jwt.JWTUtil;
+import out4ider.healthsenior.service.AsyncService;
 import out4ider.healthsenior.service.ChatMessageService;
 import out4ider.healthsenior.service.FcmService;
 import out4ider.healthsenior.service.RedisService;
@@ -35,6 +36,7 @@ public class ChatPreHandle implements ChannelInterceptor {
     private final FcmService fcmService;
     private final ChatMessageService chatMessageService;
     private final Map<String, WebSocketSession> webSocketSessionMap;
+    private final AsyncService asyncService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -72,37 +74,8 @@ public class ChatPreHandle implements ChannelInterceptor {
             }
             //메시지 시간을 클라이언트에서 받아올지, 여기서 설정할지, 아니면 다른 방식으로 설정할지 고민이 필요
 
-
+            asyncService.sendAlarmAndSocketMessageAsync(chatRequest,sessionId);
 //            List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
-            Map<Object, Object> allOauth2IdAndTokenBySessionId = redisService.getAllOauth2IdAndTokenBySessionId(sessionId);
-            for (Map.Entry<Object,Object> entry : allOauth2IdAndTokenBySessionId.entrySet()){
-                WebSocketSession sockSession = webSocketSessionMap.get((String)entry.getKey());
-                try { //fcm으로 메시지 전송
-                    log.info("send FCM to {}", (String)entry.getValue());
-                    fcmService.sendMessageTo(FcmSendDto.builder()
-                            .body(chatRequest.getContent())
-                            .title(chatRequest.getUserName())
-                            .build(), (String)entry.getValue());
-                } catch (IOException e) {
-                    log.error("FCM send failed");
-                }
-                if (sockSession == null) {
-                    log.info("No session! saving in db...");
-                    chatMessageService.saveChat(ChatMessage.builder()
-                            .userName(chatRequest.getUserName())
-                            .content(chatRequest.getContent())
-                            .oauth2Id(chatRequest.getOauth2Id())
-                            .messageTime(LocalDateTime.now()).build());
-                }
-                else{
-                    try {
-                        sockSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatRequest)));
-                    } catch (IOException e) {
-                        log.error("socket send failed");
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
             //test
             long afterTime = System.currentTimeMillis();
             log.info("time-spent-millis : {}",afterTime - beforeTime);
