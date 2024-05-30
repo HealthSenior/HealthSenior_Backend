@@ -14,6 +14,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
+    @Transactional
     public void saveChat(ChatMessage chatMessage){
         chatMessageRepository.save(chatMessage);
     }
