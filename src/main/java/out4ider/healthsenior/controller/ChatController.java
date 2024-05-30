@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import out4ider.healthsenior.domain.ChatMessage;
 import out4ider.healthsenior.domain.CommunityChatRelation;
 import out4ider.healthsenior.domain.CommunityChatRoom;
 import out4ider.healthsenior.domain.SeniorUser;
@@ -33,6 +34,7 @@ public class ChatController {
     private final SeniorUserService seniorUserService;
     private final ChatService chatService;
     private final RedisService redisService;
+    private final ChatMessageService chatMessageService;
 
     @ResponseBody
     @GetMapping("/connection_test")
@@ -131,5 +133,13 @@ public class ChatController {
             chatRoomResponseDtoList.add(communityChatRelation.getCommunityChatRoom().toResponseDto());
         }
         return chatRoomResponseDtoList;
+    }
+
+    @ResponseBody
+    @GetMapping("/chat/get-unread")
+    public List<ChatMessage> getUnread(Principal principal){
+        String oauth2Id = principal.getName();
+        List<ChatMessage> unSendChat = chatMessageService.getUnSendChat(oauth2Id);
+        return unSendChat;
     }
 }
