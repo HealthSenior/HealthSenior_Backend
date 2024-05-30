@@ -2,10 +2,7 @@ package out4ider.healthsenior.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import out4ider.healthsenior.domain.Article;
-import out4ider.healthsenior.domain.Comment;
-import out4ider.healthsenior.domain.CommunityChatRelation;
-import out4ider.healthsenior.domain.CommunityChatRoom;
+import out4ider.healthsenior.domain.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,11 +15,12 @@ public class ArticleResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<byte[]> images;
     private String username;
     private int commentCount;
     private int likeCount;
 
-    public ArticleResponseDto(Article article) {
+    public ArticleResponseDto(Article article, List<byte[]> images) {
         this.commentCount = article.getComments().size();
         this.likeCount = article.getLikeUserRelations().size();
         this.id = article.getId();
@@ -31,5 +29,6 @@ public class ArticleResponseDto {
         this.createdAt = article.getCreatedAt();
         this.updatedAt = article.getUpdatedAt();
         this.username = article.getWriter().getUserName();
+
     }
 }

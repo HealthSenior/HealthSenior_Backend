@@ -1,5 +1,6 @@
 package out4ider.healthsenior.domain;
 
+import ch.qos.logback.core.testUtil.StringListAppender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +32,9 @@ public class Article {
     private SeniorUser writer;
 
     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
+    private List<ImageFile> imageFiles;
+
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
@@ -48,6 +52,10 @@ public class Article {
 
     public void createComment(Comment comment) {
         this.comments.add(comment);
+    }
+
+    public void addImage(ImageFile imageFile) {
+        this.imageFiles.add(imageFile);
     }
 
     public void createLikeUserRelation(LikeUserRelation likeUserRelation) {

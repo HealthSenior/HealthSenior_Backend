@@ -4,16 +4,20 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import out4ider.healthsenior.domain.Article;
+import out4ider.healthsenior.domain.ImageFile;
 import out4ider.healthsenior.domain.LikeUserRelation;
 import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.dto.ArticleResponseDto;
 import out4ider.healthsenior.dto.NewArticleDto;
 import out4ider.healthsenior.service.ArticleService;
+import out4ider.healthsenior.service.ImageFileService;
 import out4ider.healthsenior.service.LikeUserRelationService;
 import out4ider.healthsenior.service.SeniorUserService;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,6 +31,7 @@ public class ArticleController {
     private final SeniorUserService seniorUserService;
     private final ArticleService articleService;
     private final LikeUserRelationService likeUserRelationService;
+    private final ImageFileService imageFileService;
 
     @PostMapping("/create")
     @Transactional
@@ -47,13 +52,25 @@ public class ArticleController {
                 .build();
         articleService.saveArticle(article);
         seniorUser.createArticle(article);
+        System.out.println(article.getId());
+        for(MultipartFile image : newArticleDto.getImages()) {
+            if(image.isEmpty()){
+                continue;
+            }
+            else{
+                imageFileService.uploadImageToFolder(article, image);
+            }
+        }
     }
     @GetMapping("/list")
-    public List<ArticleResponseDto> getArticleList(){
+    public List<ArticleResponseDto> getArticleList() throws IOException {
         List<Article> articles = articleService.getAllArticles();
         List<ArticleResponseDto> articleResponseDtos=new ArrayList<>();
         for(Article article : articles){
-            articleResponseDtos.add(new ArticleResponseDto(article));
+            List<byte[]> images = null;
+            if(!article.getImageFiles().isEmpty())
+                images = imageFileService.downloadImageFromFolder(article);
+            articleResponseDtos.add(new ArticleResponseDto(article, images));
         }
         return articleResponseDtos;
     }
