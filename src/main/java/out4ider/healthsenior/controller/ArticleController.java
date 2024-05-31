@@ -2,6 +2,7 @@ package out4ider.healthsenior.controller;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,8 +64,8 @@ public class ArticleController {
         }
     }
     @GetMapping("/list")
-    public List<ArticleResponseDto> getArticleList() throws IOException {
-        List<Article> articles = articleService.getAllArticles();
+    public List<ArticleResponseDto> getArticleList(@RequestParam(defaultValue = "0") int page) throws IOException {
+        Page<Article> articles = articleService.getArticles(page);
         List<ArticleResponseDto> articleResponseDtos=new ArrayList<>();
         for(Article article : articles){
             List<byte[]> images = null;
