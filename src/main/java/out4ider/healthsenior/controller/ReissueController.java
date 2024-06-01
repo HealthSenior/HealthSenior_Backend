@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import out4ider.healthsenior.enums.Role;
 import out4ider.healthsenior.jwt.JWTUtil;
 import out4ider.healthsenior.repository.RefreshTokenRepository;
+import out4ider.healthsenior.service.RefreshTokenService;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class ReissueController {
 
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
-
+    private final RefreshTokenService refreshTokenService;
     @PostMapping("/reissue")
     public ResponseEntity<?>reissue(HttpServletRequest request, HttpServletResponse response) {
         String refresh = null;
@@ -43,7 +44,11 @@ public class ReissueController {
         }
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
-        String newAccess = jwtUtil.createToken("access", username, Role.USER, 600000L);
+        refreshTokenRepository.deleteByRefreshToken(refresh);
+        String refreshToken = jwtUtil.createToken("refresh", username, Role.USER, 604800000L);
+        response.setHeader("Refresh", refreshToken);
+        refreshTokenService.addRefreshToken(username, refreshToken, 86400000L);
+        String newAccess = jwtUtil.createToken("access", username, Role.USER, 86400000L);
         response.setHeader("Authorization", "Bearer " + newAccess);
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -51,8 +51,8 @@ public class UserController {
         } else {
             seniorUser = byOauth2Id.get();
         }
-        response.setHeader("Authorization", "Bearer "+jwtUtil.createToken("access", oauth2Id, seniorUser.getRole(), 600000L));
-        String refreshToken = jwtUtil.createToken("refresh", oauth2Id, seniorUser.getRole(), 86400000L);
+        response.setHeader("Authorization", "Bearer "+jwtUtil.createToken("access", oauth2Id, seniorUser.getRole(), 86400000L));
+        String refreshToken = jwtUtil.createToken("refresh", oauth2Id, seniorUser.getRole(), 604800000L);
         response.setHeader("Refresh", refreshToken);
         refreshTokenService.addRefreshToken(oauth2Id, refreshToken, 86400000L);
         return registrationId+"Login success";
