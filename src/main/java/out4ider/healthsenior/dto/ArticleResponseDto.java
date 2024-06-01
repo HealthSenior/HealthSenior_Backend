@@ -29,6 +29,7 @@ public class ArticleResponseDto {
         this.createdAt = article.getCreatedAt();
         this.updatedAt = article.getUpdatedAt();
         this.username = article.getWriter().getUserName();
+        this.images = images;
 
     }
 }

@@ -12,7 +12,6 @@ import out4ider.healthsenior.domain.ImageFile;
 import out4ider.healthsenior.domain.LikeUserRelation;
 import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.dto.ArticleResponseDto;
-import out4ider.healthsenior.dto.NewArticleDto;
 import out4ider.healthsenior.service.ArticleService;
 import out4ider.healthsenior.service.ImageFileService;
 import out4ider.healthsenior.service.LikeUserRelationService;
@@ -36,7 +35,7 @@ public class ArticleController {
 
     @PostMapping("/create")
     @Transactional
-    public void createArticle(@RequestBody NewArticleDto newArticleDto, Principal principal) throws Exception {
+    public void createArticle(@RequestParam String title, @RequestParam String content,@RequestParam List<MultipartFile> images , Principal principal) throws Exception {
         String name = principal.getName();
         Optional<SeniorUser> op = seniorUserService.findByOauth2Id(name);
         if (op.isEmpty()) {
@@ -44,17 +43,18 @@ public class ArticleController {
         }
         SeniorUser seniorUser = op.get();
         Article article = Article.builder()
-                .title(newArticleDto.getTitle())
-                .content(newArticleDto.getContent())
+                .title(title)
+                .content(content)
                 .writer(seniorUser)
                 .createdAt(LocalDateTime.now())
                 .comments(new ArrayList<>())
+                .imageFiles(new ArrayList<>())
                 .likeUserRelations(new ArrayList<>())
                 .build();
         articleService.saveArticle(article);
         seniorUser.createArticle(article);
         System.out.println(article.getId());
-        for(MultipartFile image : newArticleDto.getImages()) {
+        for(MultipartFile image : images) {
             if(image.isEmpty()){
                 continue;
             }
