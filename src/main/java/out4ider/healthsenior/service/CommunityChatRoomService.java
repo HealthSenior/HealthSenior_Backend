@@ -7,8 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import out4ider.healthsenior.domain.CommunityChatRoom;
+import out4ider.healthsenior.dto.NewChatDto;
 import out4ider.healthsenior.repository.CommunityChatRoomRepository;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,9 +20,17 @@ import java.util.Optional;
 public class CommunityChatRoomService {
     private final CommunityChatRoomRepository communityChatRoomRepository;
 
-    public CommunityChatRoom saveChatRoom(CommunityChatRoom communityChatRoom){
-        CommunityChatRoom saved = communityChatRoomRepository.save(communityChatRoom);
-        return saved;
+    public CommunityChatRoom saveChatRoom(NewChatDto newChatDto, String oauth2Id){
+        CommunityChatRoom communityChatRoom = CommunityChatRoom.builder()
+                .title(newChatDto.getTitle())
+                .description(newChatDto.getDescription())
+                .masterId(oauth2Id)
+                .maxUserCount(newChatDto.getMaxUserCount())
+                .sportKind(newChatDto.getSportKind())
+                .startDate(LocalDateTime.now())
+                .communityChatRelation(new ArrayList<>())
+                .build();
+        return communityChatRoomRepository.save(communityChatRoom);
     }
 
     public List<CommunityChatRoom> getChatRoomList(int page, Long userId){

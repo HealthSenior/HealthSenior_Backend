@@ -60,6 +60,7 @@ public class ChatPreHandle implements ChannelInterceptor {
         else if (StompCommand.SEND == accessor.getCommand()){
             //test
             long beforeTime = System.currentTimeMillis();
+            String roomNumber = accessor.getFirstNativeHeader("roomnumber");
             Object payload = message.getPayload();
             if (payload instanceof byte[]) {
                 String content = new String((byte[]) payload, StandardCharsets.UTF_8);
@@ -73,8 +74,7 @@ public class ChatPreHandle implements ChannelInterceptor {
                 log.info("Message payload is not a byte array");
             }
             //메시지 시간을 클라이언트에서 받아올지, 여기서 설정할지, 아니면 다른 방식으로 설정할지 고민이 필요
-
-            asyncService.sendAlarmAndSocketMessageAsync(chatRequest,sessionId);
+            asyncService.sendAlarmAndSocketMessageAsync(Long.parseLong(roomNumber),chatRequest,sessionId);
 //            List<String> allTokenBySessionId = redisService.getAllTokenBySessionId(sessionId);
             //test
             long afterTime = System.currentTimeMillis();

@@ -27,7 +27,7 @@ public class AsyncService {
     private final ChatService chatService;
 
     @Async
-    public void sendAlarmAndSocketMessageAsync(ChatRequest chatRequest, String sessionId){
+    public void sendAlarmAndSocketMessageAsync(Long roomNumber,ChatRequest chatRequest, String sessionId){
         Map<Object, Object> allOauth2IdAndTokenBySessionId = redisService.getAllOauth2IdAndTokenBySessionId(sessionId);
         for (Map.Entry<Object,Object> entry : allOauth2IdAndTokenBySessionId.entrySet()){
             WebSocketSession sockSession = webSocketSessionMap.get((String)entry.getKey());
@@ -43,6 +43,7 @@ public class AsyncService {
             if (sockSession == null) {
                 log.info("No session! saving in db...");
                 chatMessageService.saveChat(ChatMessage.builder()
+                        .chatRoomId(roomNumber)
                         .userName(chatRequest.getUserName())
                         .content(chatRequest.getContent())
                         .oauth2Id(chatRequest.getOauth2Id())

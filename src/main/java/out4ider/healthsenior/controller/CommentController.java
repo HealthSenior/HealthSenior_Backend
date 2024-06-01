@@ -56,11 +56,8 @@ public class CommentController {
         }
         Article article = oa.get();
         String name = principal.getName();
-        Optional<SeniorUser> op = seniorUserService.findByOauth2Id(name);
-        if (op.isEmpty()) {
-            throw new Exception();
-        }
-        SeniorUser seniorUser = op.get();
+        SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
+
         Comment comment = Comment.builder()
                 .createdAt(LocalDateTime.now())
                 .content(newCommentDto.getContent())

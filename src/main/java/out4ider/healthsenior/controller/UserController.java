@@ -10,6 +10,7 @@ import out4ider.healthsenior.dto.TokenLoginResponseDto;
 import out4ider.healthsenior.dto.UserDto;
 import out4ider.healthsenior.enums.Role;
 import out4ider.healthsenior.jwt.JWTUtil;
+import out4ider.healthsenior.service.FcmService;
 import out4ider.healthsenior.service.RefreshTokenService;
 import out4ider.healthsenior.repository.UserFcmRepository;
 import out4ider.healthsenior.service.RedisService;
@@ -29,67 +30,21 @@ public class UserController {
     private final SeniorUserService seniorUserService;
     private final JWTUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
-    private final UserFcmRepository userFcmRepository;
+    private final FcmService fcmService;
     private final RedisService redisService;
 
     @PostMapping("/login")
     public String login(@RequestBody UserDto userDto, @RequestHeader Map<String,String> headers, HttpServletResponse response) {
+        SeniorUser seniorUser = seniorUserService.saveSeniorUser(userDto);
+        String oauth2Id = seniorUser.getOauth2Id();
         String fcm_token = headers.get("fcm-token");
-        log.info("fcm-token = {}",fcm_token);
-        String registrationId = userDto.getRegistrationId();
-        String oauth2Id = registrationId + userDto.getUserId();
-        UserFcmToken userFcm;
-        Optional<UserFcmToken> fcmById = userFcmRepository.findById(oauth2Id);
-        if (fcmById.isEmpty()){
-            userFcm = new UserFcmToken(oauth2Id,fcm_token);
-        }
-        else{
-            userFcm = fcmById.get();
-            if (!userFcm.getFcmToken().equals(fcm_token)) {
-                userFcm.updateFcmToken(fcm_token);
-                redisService.updateUserFcmToken(oauth2Id,fcm_token);
-            }
-        }
-        userFcmRepository.save(userFcm);
-        boolean isMale = false;
-        if (userDto.getGender()==null || userDto.getGender().equals("m")) {
-            isMale = true;
-        }
-        Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(oauth2Id);
-        SeniorUser seniorUser;
-        if (byOauth2Id.isEmpty()) {
-            seniorUser = SeniorUser.builder()
-                    .userAge(LocalDateTime.now().getYear() - Integer.parseInt(userDto.getBirthYear()) + 1)
-                    .userName(userDto.getName())
-                    .email(userDto.getEmail()).role(Role.USER).oauth2Id(oauth2Id)
-                    .communityChatRelation(new ArrayList<>())
-                    .articleList(new ArrayList<>())
-                    .commentList(new ArrayList<>())
-                    .likeUserRelations(new ArrayList<>())
-                    .isMale(isMale).build();
-            seniorUserService.saveSeniorUser(seniorUser);
-        } else {
-            seniorUser = byOauth2Id.get();
-        }
+        fcmService.saveOfUpdateFcmToken(oauth2Id,fcm_token);
+
         response.setHeader("Authorization", "Bearer "+jwtUtil.createToken("access", oauth2Id, seniorUser.getRole(), 86400000L));
         String refreshToken = jwtUtil.createToken("refresh", oauth2Id, seniorUser.getRole(), 604800000L);
         response.setHeader("Refresh", refreshToken);
         refreshTokenService.addRefreshToken(oauth2Id, refreshToken, 86400000L);
-        return registrationId+"Login success";
-    }
 
-    @GetMapping("/token-login")
-    public TokenLoginResponseDto tokenLogin(Principal principal) throws Exception {
-        String name = principal.getName();
-        Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(name);
-        if (byOauth2Id.isEmpty()) throw new Exception();
-        SeniorUser seniorUser = byOauth2Id.get();
-        TokenLoginResponseDto requestDto = TokenLoginResponseDto.builder()
-                .gender(seniorUser.isMale())
-                .age(seniorUser.getUserAge())
-                .email(seniorUser.getEmail())
-                .name(seniorUser.getUserName())
-                .build();
-        return requestDto;
+        return "Login success";
     }
 }

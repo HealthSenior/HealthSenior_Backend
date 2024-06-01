@@ -25,4 +25,10 @@ public class CommunityChatRelationService {
         CommunityChatRelation save = communityChatRelationRepository.save(chatRelation);
         return save;
     }
+
+    public boolean isAlreadyJoined(Long chatRoomId, Long userId){
+        int cnt = communityChatRelationRepository.countByChatRoomIdAndUserId(userId, chatRoomId);
+        if (cnt > 0) return true;
+        return false;
+    }
 }

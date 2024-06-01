@@ -37,11 +37,8 @@ public class ArticleController {
     @Transactional
     public void createArticle(@RequestParam String title, @RequestParam String content,@RequestParam List<MultipartFile> images , Principal principal) throws Exception {
         String name = principal.getName();
-        Optional<SeniorUser> op = seniorUserService.findByOauth2Id(name);
-        if (op.isEmpty()) {
-            throw new Exception();
-        }
-        SeniorUser seniorUser = op.get();
+        SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
+
         Article article = Article.builder()
                 .title(title)
                 .content(content)
@@ -111,11 +108,7 @@ public class ArticleController {
         }
         Article article = oa.get();
         String name= principal.getName();
-        Optional<SeniorUser> os = seniorUserService.findByOauth2Id(name);
-        if (os.isEmpty()) {
-            throw new Exception();
-        }
-        SeniorUser seniorUser = os.get();
+        SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
         int count = article.getLikeUserRelations().size();
         List<LikeUserRelation> checked = article.getLikeUserRelations();
         for(LikeUserRelation likeUserRelation : checked){

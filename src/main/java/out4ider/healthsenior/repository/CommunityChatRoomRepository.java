@@ -12,7 +12,7 @@ public interface CommunityChatRoomRepository extends JpaRepository<CommunityChat
     public List<CommunityChatRoom> findByChatRoomIdNotIn(List<Long> chatRoomIds);
 //    Page<CommunityChatRoom> findByChatRoomIdNotIn(List<Long> chatRoomIds,Pageable pageable);
 
-    @Query("select c from CommunityChatRoom c join c.communityChatRelation m where m.seniorUser.userId <> ?1")
+    @Query("select c from CommunityChatRoom c where not exists (select 1 from c.communityChatRelation m where m.seniorUser.userId = ?1)")
     Page<CommunityChatRoom> findByChatRoomIdNotIn(Long userId, Pageable pageable);
 
     @Query("select c from CommunityChatRoom c join c.communityChatRelation m where m.seniorUser.userId = ?1")
