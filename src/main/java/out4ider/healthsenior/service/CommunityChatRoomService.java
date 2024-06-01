@@ -1,6 +1,10 @@
 package out4ider.healthsenior.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import out4ider.healthsenior.domain.CommunityChatRoom;
 import out4ider.healthsenior.repository.CommunityChatRoomRepository;
@@ -18,9 +22,10 @@ public class CommunityChatRoomService {
         return saved;
     }
 
-    public List<CommunityChatRoom> getChatRoomList(List<Long> chatRoomIds){
-        List<CommunityChatRoom> allChatRoom = communityChatRoomRepository.findByChatRoomIdNotIn(chatRoomIds);
-        return allChatRoom;
+    public List<CommunityChatRoom> getChatRoomList(int page, Long userId){
+        Pageable pageable = PageRequest.of(page,10, Sort.by("startDate").descending());
+
+        return communityChatRoomRepository.findByChatRoomIdNotIn(userId,pageable).getContent();
     }
 
     public CommunityChatRoom getChatRoom(Long chatRoomId) throws Exception {
@@ -29,5 +34,11 @@ public class CommunityChatRoomService {
             throw new Exception();
         }
         return byId.get();
+    }
+
+    public List<CommunityChatRoom> getMyChatRoomList(int page, Long userId){
+        Pageable pageable = PageRequest.of(page,10,Sort.by("startDate").descending());
+
+        return communityChatRoomRepository.findAllByUserId(userId,pageable).getContent();
     }
 }

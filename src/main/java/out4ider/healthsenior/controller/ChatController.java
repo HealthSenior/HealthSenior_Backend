@@ -21,9 +21,11 @@ import out4ider.healthsenior.service.*;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
@@ -60,7 +62,7 @@ public class ChatController {
                 .masterId(principal.getName())
                 .maxUserCount(newChatDto.getMaxUserCount())
                 .sportKind(newChatDto.getSportKind())
-                .startDate(LocalDate.now())
+                .startDate(LocalDateTime.now())
                 .communityChatRelation(new ArrayList<>())
                 .build();
         CommunityChatRoom newChatRoom = communityChatRoomService.saveChatRoom(communityChatRoom);
@@ -100,19 +102,16 @@ public class ChatController {
 
     @ResponseBody
     @GetMapping("/chatroom/list")
-    public List<ChatRoomResponseDto> chatRoomList(Principal principal) throws Exception {
+    public List<ChatRoomResponseDto> chatRoomList(@RequestParam(value = "page", defaultValue = "0") int page,  Principal principal) throws Exception {
         List<Long> chatRoomIds = new ArrayList<>();
         Optional<SeniorUser> os = seniorUserService.findByOauth2Id(principal.getName());
         if(os.isEmpty()){
             throw new Exception();
         }
         SeniorUser seniorUser = os.get();
-        for(CommunityChatRelation communityChatRelation : seniorUser.getCommunityChatRelation()){
-            chatRoomIds.add(communityChatRelation.getCommunityChatRoom().getChatRoomId());
-        }
-        List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList(chatRoomIds);
+        List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList(page,seniorUser.getUserId());
         for (CommunityChatRoom x : chatRoomList){
-            System.out.println(x.toString());
+            log.info(x.toString());
         }
         List<ChatRoomResponseDto> chatRoomResponseList = new ArrayList<>();
         for (CommunityChatRoom communityChatRoom : chatRoomList){
@@ -123,16 +122,14 @@ public class ChatController {
 
     @ResponseBody
     @GetMapping("/chatroom/mylist")
-    public List<ChatRoomResponseDto> myChatRoomList(Principal principal) throws Exception {
+    public List<ChatRoomResponseDto> myChatRoomList(@RequestParam(value = "page", defaultValue = "0") int page, Principal principal) throws Exception {
         String name = principal.getName();
         Optional<SeniorUser> byOauth2Id = seniorUserService.findByOauth2Id(name);
         if (byOauth2Id.isEmpty()) throw new Exception();
-        List<CommunityChatRelation> communityChatRelations = byOauth2Id.get().getCommunityChatRelation();
-        List<ChatRoomResponseDto> chatRoomResponseDtoList = new ArrayList<>();
-        for (CommunityChatRelation communityChatRelation: communityChatRelations){
-            chatRoomResponseDtoList.add(communityChatRelation.getCommunityChatRoom().toResponseDto());
-        }
-        return chatRoomResponseDtoList;
+
+        List<CommunityChatRoom> myChatRoomList = communityChatRoomService.getMyChatRoomList(page, byOauth2Id.get().getUserId());
+        List<ChatRoomResponseDto> collect = myChatRoomList.stream().map((a) -> a.toResponseDto()).collect(Collectors.toList());
+        return collect;
     }
 
     @ResponseBody
