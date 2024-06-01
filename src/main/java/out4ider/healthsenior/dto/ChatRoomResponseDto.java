@@ -8,6 +8,7 @@ import out4ider.healthsenior.domain.CommunityChatRelation;
 import out4ider.healthsenior.domain.CommunityChatRoom;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -20,7 +21,7 @@ public class ChatRoomResponseDto {
     private String description;
     private String masterId;
     private String sportKind;
-    private LocalDate startDate;
+    private LocalDateTime startDate;
     private Integer currentUserCount;
     private Double averageAge;
 

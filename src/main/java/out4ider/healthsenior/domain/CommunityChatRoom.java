@@ -5,6 +5,7 @@ import lombok.*;
 import out4ider.healthsenior.dto.ChatRoomResponseDto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -37,7 +38,7 @@ public class CommunityChatRoom {
     private String sportKind;
 
     @Column
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     public void letInUser(CommunityChatRelation communityChatRelation){
         this.communityChatRelation.add(communityChatRelation);

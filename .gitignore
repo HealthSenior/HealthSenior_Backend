@@ -36,3 +36,4 @@ application-secrets.properties
 
 ### VS Code ###
 .vscode/
+/src/main/resources/firebase/fcm-key.json
