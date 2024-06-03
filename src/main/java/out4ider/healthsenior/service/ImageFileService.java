@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ImageFileService {
-    private final String FOLDER_PATH = "images";
+    private final String FOLDER_PATH = "images/";
     private final ImageFileRepository imageFileRepository;
 
     public void uploadImageToFolder(Article article, MultipartFile file) throws IOException {
