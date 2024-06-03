@@ -17,11 +17,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ImageFileService {
-    private final String FOLDER_PATH = "C:\\images\\";
+    private final String FOLDER_PATH = "images";
     private final ImageFileRepository imageFileRepository;
 
     public void uploadImageToFolder(Article article, MultipartFile file) throws IOException {
-        String filePath = FOLDER_PATH +"article"+article.getId()+"\\";
+        String filePath = FOLDER_PATH +"article"+article.getId()+"/";
         ImageFile imageFile = ImageFile.builder()
                 .filePath(filePath)
                 .fileName(file.getOriginalFilename())
@@ -34,7 +34,7 @@ public class ImageFileService {
     }
 
     public List<byte[]> downloadImageFromFolder(Article article) throws IOException {
-        String filePath = FOLDER_PATH +"article"+article.getId()+"\\";
+        String filePath = FOLDER_PATH +"article"+article.getId()+"/";
         List<byte[]> result = new ArrayList<>();
         for(ImageFile imageFile : article.getImageFiles()){
             result.add(Files.readAllBytes(Path.of(filePath+imageFile.getFileName())));

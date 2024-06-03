@@ -9,6 +9,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import out4ider.healthsenior.domain.ChatMessage;
 import out4ider.healthsenior.dto.ChatRequest;
+import out4ider.healthsenior.dto.ChatRoomResponseDto;
 import out4ider.healthsenior.dto.FcmSendDto;
 
 import java.io.IOException;
@@ -31,6 +32,12 @@ public class AsyncService {
         Map<Object, Object> allOauth2IdAndTokenBySessionId = redisService.getAllOauth2IdAndTokenBySessionId(sessionId);
         for (Map.Entry<Object,Object> entry : allOauth2IdAndTokenBySessionId.entrySet()){
             WebSocketSession sockSession = webSocketSessionMap.get((String)entry.getKey());
+            ChatMessage chatMessage = ChatMessage.builder()
+                    .chatRoomId(roomNumber)
+                    .userName(chatRequest.getUserName())
+                    .content(chatRequest.getContent())
+                    .oauth2Id(chatRequest.getOauth2Id())
+                    .messageTime(LocalDateTime.now()).build();
             try { //fcm으로 메시지 전송
                 log.info("send FCM to {}", (String)entry.getValue());
                 fcmService.sendMessageTo(FcmSendDto.builder()
@@ -41,17 +48,13 @@ public class AsyncService {
                 log.error("FCM send failed");
             }
             if (sockSession == null) {
+
                 log.info("No session! saving in db...");
-                chatMessageService.saveChat(ChatMessage.builder()
-                        .chatRoomId(roomNumber)
-                        .userName(chatRequest.getUserName())
-                        .content(chatRequest.getContent())
-                        .oauth2Id(chatRequest.getOauth2Id())
-                        .messageTime(LocalDateTime.now()).build());
+                chatMessageService.saveChat(chatMessage);
             }
             else{
                 try {
-                    sockSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatService.chatRequestToResponse(chatRequest))));
+                    sockSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(chatMessage.toUnreadMessageDto())));
                 } catch (IOException e) {
                     log.error("socket send failed");
                     throw new RuntimeException(e);
