@@ -4,17 +4,16 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
-import out4ider.healthsenior.service.RefreshTokenService;
+import out4ider.healthsenior.service.RedisService;
 
 import java.io.IOException;
 
 public class CustomLogoutFilter extends GenericFilter {
 
-    private final RefreshTokenService refreshTokenService;
     private final JWTUtil jwtUtil;
-
-    public CustomLogoutFilter(RefreshTokenService refreshTokenService, JWTUtil jwtUtil) {
-        this.refreshTokenService = refreshTokenService;
+    private final RedisService redisService;
+    public CustomLogoutFilter(RedisService redisService, JWTUtil jwtUtil) {
+        this.redisService = redisService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -43,13 +42,16 @@ public class CustomLogoutFilter extends GenericFilter {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        boolean isExist= refreshTokenService.existRefreshToken(refresh);
-        if (!isExist) {
+
+        String username = jwtUtil.getUsername(refresh);
+        String refreshToken = null;
+        refreshToken = redisService.getRefreshToken(username);
+        if (refreshToken == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-        refreshTokenService.deleteRefreshToken(refresh);
+        redisService.deleteRefreshToken(refresh);
         SecurityContextHolder.clearContext();
         //200 응답 받으면 프론트에서 액세스 토큰 삭제하도록
         response.setHeader("Refresh", null);

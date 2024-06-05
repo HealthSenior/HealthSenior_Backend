@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +36,20 @@ public class RedisService {
         HashOperations<String, Object, Object> stringObjectObjectHashOperations = redisTemplate.opsForHash();
         stringObjectObjectHashOperations.put(roomNumber,oauth2Id,token);
         log.info("putToken : {}", oauth2Id);
+    }
+
+    public void putRefreshToken(String username, String token, Long expiredTime){
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        valueOperations.set(username, token, expiredTime, TimeUnit.MICROSECONDS);
+    }
+
+    public String getRefreshToken(String username){
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        return valueOperations.get(username);
+    }
+
+    public void deleteRefreshToken(String username){
+        redisTemplate.delete(username);
     }
 
     public List<String> getAllTokenBySessionId(String sessionId){
