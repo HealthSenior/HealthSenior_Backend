@@ -58,7 +58,6 @@ public class ArticleService {
                 UUID uuid = UUID.randomUUID();
                 String fileName = uuid + image.getOriginalFilename();
                 ImageFile imageFile = ImageFile.builder()
-                        .filePath(filePath)
                         .fileName(fileName)
                         .article(article)
                         .build();
