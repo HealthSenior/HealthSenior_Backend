@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,41 +34,14 @@ public class CommentController {
 
     @GetMapping("/list/{id}")
     public List<CommentResponseDto> getCommentList(@PathVariable Long id) throws Exception {
-        Optional<Article> oa = articleService.getArticleById(id);
-        if(oa.isEmpty()){
-            throw new Exception();
-        }
-        Article article = oa.get();
-        List<Comment> comments= article.getComments();
-        List<CommentResponseDto> commentResponseDtos = new ArrayList<>();
-        for(Comment comment : comments){
-            commentResponseDtos.add(new CommentResponseDto(comment));
-        }
-
-        return commentResponseDtos;
+        List<Comment> comments = commentService.getAllComments(id);
+        return comments.stream().map(Comment::toResponseDto).collect(Collectors.toList());
     }
 
     @PostMapping("/create/{id}")
     @Transactional
     public int createComment(@PathVariable Long id, @RequestBody NewCommentDto newCommentDto, Principal principal) throws Exception {
-        Optional<Article> oa = articleService.getArticleById(id);
-        if(oa.isEmpty()) {
-            throw new Exception();
-        }
-        Article article = oa.get();
-        String name = principal.getName();
-        SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
-
-        Comment comment = Comment.builder()
-                .createdAt(LocalDateTime.now())
-                .content(newCommentDto.getContent())
-                .writer(seniorUser)
-                .article(article)
-                .build();
-        commentService.saveComment(comment);
-        seniorUser.createComment(comment);
-        article.createComment(comment);
-        return article.getComments().size();
+        return commentService.saveComment(id, newCommentDto, principal.getName());
     }
    /* @PutMapping("/modify/{id}")
     public Comment modifyComment(@PathVariable Long id, @RequestBody NewCommentDto newCommentDto) throws Exception {
@@ -84,14 +58,6 @@ public class CommentController {
 
     @DeleteMapping("/delete/{id}")
     public void deleteComment(@PathVariable("id") Long id, Principal principal) throws Exception {
-        Optional<Comment> oc = this.commentService.getCommentById(id);
-        if(oc.isEmpty()) {
-            throw new Exception();
-        }
-        Comment comment = oc.get();
-        if(!comment.getWriter().getOauth2Id().equals(principal.getName())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"삭제 권한이 없습니다.");
-        }
-        this.commentService.deleteCommentById(comment.getId());
+        commentService.deleteComment(id, principal.getName());
     }
 }
