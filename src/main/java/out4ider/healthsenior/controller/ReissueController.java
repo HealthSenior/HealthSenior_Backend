@@ -10,16 +10,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import out4ider.healthsenior.enums.Role;
 import out4ider.healthsenior.jwt.JWTUtil;
-import out4ider.healthsenior.repository.RefreshTokenRepository;
-import out4ider.healthsenior.service.RefreshTokenService;
+import out4ider.healthsenior.service.RedisService;
 
 @RestController
 @RequiredArgsConstructor
 public class ReissueController {
 
     private final JWTUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final RefreshTokenService refreshTokenService;
+    private final RedisService redisService;
+
     @PostMapping("/reissue")
     public ResponseEntity<?>reissue(HttpServletRequest request, HttpServletResponse response) {
         String refresh = null;
@@ -37,17 +36,16 @@ public class ReissueController {
         if (!category.equals("refresh")) {
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
-
-        Boolean isExist = refreshTokenRepository.existsByRefreshToken(refresh);
-        if (!isExist) {
-            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
-        }
         String username = jwtUtil.getUsername(refresh);
         String role = jwtUtil.getRole(refresh);
-        refreshTokenRepository.deleteByRefreshToken(refresh);
+        //유저가 가지고 있는 refresh가 맞는지 확인
+        if(!redisService.getRefreshToken(username).equals(refresh)){
+            return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
+        }
+        redisService.deleteRefreshToken(username);
         String refreshToken = jwtUtil.createToken("refresh", username, Role.USER, 604800000L);
         response.setHeader("Refresh", refreshToken);
-        refreshTokenService.addRefreshToken(username, refreshToken, 86400000L);
+        redisService.putRefreshToken(username, refreshToken, 86400000L);
         String newAccess = jwtUtil.createToken("access", username, Role.USER, 86400000L);
         response.setHeader("Authorization", "Bearer " + newAccess);
         return new ResponseEntity<>(HttpStatus.OK);

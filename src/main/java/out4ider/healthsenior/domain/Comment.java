@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import out4ider.healthsenior.dto.CommentResponseDto;
 
 import java.time.LocalDateTime;
 
@@ -30,10 +31,15 @@ public class Comment {
 
     private LocalDateTime updatedAt;
 
-    public void setContent(String content){
+    public void setContent(String content) {
         this.content = content;
     }
-    public void setUpdatedAt(LocalDateTime updatedAt){
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public CommentResponseDto toResponseDto() {
+        return new CommentResponseDto(this);
     }
 }

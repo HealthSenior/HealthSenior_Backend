@@ -18,8 +18,6 @@ public class ImageFile {
 
     private String fileName;
 
-    private String filePath;
-
     @ManyToOne
     Article article;
 }

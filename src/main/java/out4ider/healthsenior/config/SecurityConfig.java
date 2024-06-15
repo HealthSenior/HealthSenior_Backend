@@ -18,7 +18,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import out4ider.healthsenior.jwt.CustomLogoutFilter;
 import out4ider.healthsenior.jwt.JWTFilter;
 import out4ider.healthsenior.jwt.JWTUtil;
-import out4ider.healthsenior.service.RefreshTokenService;
+import out4ider.healthsenior.service.RedisService;
 
 import java.util.Collections;
 
@@ -28,7 +28,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final JWTUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
+    private final RedisService redisService;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -62,7 +62,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         http
-                .addFilterBefore(new CustomLogoutFilter(refreshTokenService, jwtUtil), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(redisService, jwtUtil), LogoutFilter.class);
         return http.build();
     }
 }
