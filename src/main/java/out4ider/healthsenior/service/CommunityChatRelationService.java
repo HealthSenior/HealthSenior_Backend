@@ -36,6 +36,7 @@ public class CommunityChatRelationService {
 
     @Transactional
     public void exitChatRoom(Long chatRoomId, String oauth2Id){
+        redisService.deleteTokenOfChatRoomUser(String.valueOf(chatRoomId),oauth2Id);
         communityChatRelationRepository.deleteBySeniorUserOauth2IdAndChatRoomId(oauth2Id,chatRoomId);
     }
 }
