@@ -82,6 +82,9 @@ public class RedisService {
         String token = (String)stringObjectObjectHashOperations.get("token", sessionId);
         log.info("roomNumber : {}, oauth2Id : {}, token : {}", roomNumber, oauth2Id, token);
         stringObjectObjectHashOperations.put(roomNumber,oauth2Id,token);
+        stringObjectObjectHashOperations.delete("roomNumber",sessionId);
+        stringObjectObjectHashOperations.delete("oauth2Id",sessionId);
+        stringObjectObjectHashOperations.delete("token",sessionId);
         log.info("quitChatRoom : {}", oauth2Id);
     }
 
