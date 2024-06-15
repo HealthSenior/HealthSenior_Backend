@@ -2,6 +2,7 @@ package out4ider.healthsenior.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -35,6 +36,7 @@ public class ChatController {
     private final RedisService redisService;
     private final ChatMessageService chatMessageService;
     private final FcmService fcmService;
+    private final RabbitTemplate rabbitTemplate;
 
     @ResponseBody
     @GetMapping("/connection_test")
@@ -43,12 +45,12 @@ public class ChatController {
         return "ok";
     }
 
-    @MessageMapping("/chatroom/{chatRoomId}")
-    @SendTo("/subscribe_room/{chatRoomId}")
+    @MessageMapping("room.{chatRoomId}")
     public ChatResponse chat(@DestinationVariable Long chatRoomId, ChatRequest chatRequest){
         log.info("sending!");
         ChatResponse chatResponse = chatService.chatRequestToResponse(chatRequest);
         log.info("send chat : {}",chatResponse.getContent());
+        rabbitTemplate.convertAndSend("chat.exchange","room."+chatRoomId,chatResponse);
         return chatResponse;
     }
 
@@ -101,5 +103,11 @@ public class ChatController {
         String oauth2Id = principal.getName();
         List<UnreadMessageDto> unSendChat = chatMessageService.getUnSendChat(oauth2Id);
         return unSendChat;
+    }
+
+    @ResponseBody
+    @PostMapping("/chatroom/exitchat/{chatRoomId}")
+    public void exitChat(@PathVariable Long chatRoomId, Principal principal){
+        communityChatRelationService.exitChatRoom(chatRoomId,principal.getName());
     }
 }

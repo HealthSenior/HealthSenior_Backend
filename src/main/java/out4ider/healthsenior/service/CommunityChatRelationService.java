@@ -7,12 +7,14 @@ import out4ider.healthsenior.domain.CommunityChatRelation;
 import out4ider.healthsenior.domain.CommunityChatRoom;
 import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.repository.CommunityChatRelationRepository;
+import out4ider.healthsenior.repository.UserFcmRepository;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CommunityChatRelationService {
     private final CommunityChatRelationRepository communityChatRelationRepository;
+    private final UserFcmRepository userFcmRepository;
 
     @Transactional
     public CommunityChatRelation newChat(SeniorUser seniorUser, CommunityChatRoom communityChatRoom){
@@ -30,5 +32,10 @@ public class CommunityChatRelationService {
         int cnt = communityChatRelationRepository.countByChatRoomIdAndUserId(userId, chatRoomId);
         if (cnt > 0) return true;
         return false;
+    }
+
+    @Transactional
+    public void exitChatRoom(Long chatRoomId, String oauth2Id){
+        communityChatRelationRepository.deleteBySeniorUserOauth2IdAndChatRoomId(oauth2Id,chatRoomId);
     }
 }
