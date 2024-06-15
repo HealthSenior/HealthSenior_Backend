@@ -14,7 +14,7 @@ import out4ider.healthsenior.repository.UserFcmRepository;
 @Transactional(readOnly = true)
 public class CommunityChatRelationService {
     private final CommunityChatRelationRepository communityChatRelationRepository;
-    private final UserFcmRepository userFcmRepository;
+    private final RedisService redisService;
 
     @Transactional
     public CommunityChatRelation newChat(SeniorUser seniorUser, CommunityChatRoom communityChatRoom){

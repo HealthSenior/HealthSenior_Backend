@@ -25,6 +25,7 @@ public class ChatMessage {
     private String oauth2Id;
     private String userName;
     private String content;
+    private String unreadUserOauth2Id;
     private LocalDateTime messageTime;
 
     public UnreadMessageDto toUnreadMessageDto(){

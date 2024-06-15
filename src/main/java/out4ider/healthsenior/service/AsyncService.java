@@ -36,6 +36,7 @@ public class AsyncService {
                     .chatRoomId(roomNumber)
                     .userName(chatRequest.getUserName())
                     .content(chatRequest.getContent())
+                    .unreadUserOauth2Id((String)entry.getKey())
                     .oauth2Id(chatRequest.getOauth2Id())
                     .messageTime(LocalDateTime.now()).build();
             try { //fcm으로 메시지 전송

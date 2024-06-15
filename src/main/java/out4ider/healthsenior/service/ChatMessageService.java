@@ -22,8 +22,8 @@ public class ChatMessageService {
     }
     @Transactional
     public List<UnreadMessageDto> getUnSendChat(String oauth2Id){
-        List<ChatMessage> allByOauth2Id = chatMessageRepository.findAllByOauth2Id(oauth2Id);
-        chatMessageRepository.deleteAllByOauth2Id(oauth2Id);
+        List<ChatMessage> allByOauth2Id = chatMessageRepository.findAllByUnreadUserOauth2Id(oauth2Id);
+        chatMessageRepository.deleteAllByUnreadUserOauth2Id(oauth2Id);
 
         return allByOauth2Id.stream().map(ChatMessage::toUnreadMessageDto).collect(Collectors.toList());
     }
