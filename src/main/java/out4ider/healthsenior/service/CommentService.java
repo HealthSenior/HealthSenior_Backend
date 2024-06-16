@@ -23,7 +23,7 @@ public class CommentService {
     private final SeniorUserService seniorUserService;
     private final ArticleService articleService;
 
-    public int saveComment(Long articleId, NewCommentDto newCommentDto, String name) throws Exception {
+    public int saveComment(Long articleId, NewCommentDto newCommentDto, String name) {
         Article article = articleService.getArticleById(articleId);
         int count = commentRepository.countByArticleId(articleId);
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);

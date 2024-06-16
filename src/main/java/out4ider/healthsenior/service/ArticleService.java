@@ -35,7 +35,7 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final SeniorUserService seniorUserService;
     private final ImageFileRepository imageFileRepository;
-    private final String filePath = "/home/rosoa0475/HealthSenior_Backend/images/";
+    private final String filePath = "/home/ubuntu/hsimage";
 
     @Transactional
     public void saveArticle(String title, String content, List<MultipartFile> images, String name) throws IOException {
@@ -60,7 +60,6 @@ public class ArticleService {
                         .fileName(fileName)
                         .article(article)
                         .build();
-                Files.createDirectories(Path.of(filePath));
                 article.addImage(imageFile);
                 imageFileRepository.save(imageFile);
                 image.transferTo(new File(filePath + fileName));
