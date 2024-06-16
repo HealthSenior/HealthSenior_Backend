@@ -51,7 +51,7 @@ public class ArticleService {
                 .build();
         articleRepository.save(article);
         seniorUser.createArticle(article);
-        if (!images.isEmpty()) {
+        if (images!=null && images.size()>0) {
             UUID uuid = null;
             for (MultipartFile image : images) {
                 uuid = UUID.randomUUID();
@@ -113,7 +113,7 @@ public class ArticleService {
             throw new NotAuthorizedException(3, "Don't have permission to delete this article", HttpStatus.FORBIDDEN);
         }
         List<ImageFile> images = article.getImageFiles();
-        if (!images.isEmpty()) {
+        if (images !=null && images.size()>0) {
             for (ImageFile imageFile : images) {
                 Files.deleteIfExists(Path.of(filePath + imageFile.getFileName()));
             }
