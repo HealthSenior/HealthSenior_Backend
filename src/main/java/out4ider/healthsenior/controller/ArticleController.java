@@ -22,7 +22,7 @@ public class ArticleController {
     private final LikeUserRelationService likeUserRelationService;
 
     @PostMapping("/create")
-    public void createArticle(@RequestParam String title, @RequestParam String content,@RequestParam List<MultipartFile> images , Principal principal) throws Exception {
+    public void createArticle(@RequestParam String title, @RequestParam String content,@RequestParam(required = false) List<MultipartFile> images , Principal principal) throws IOException {
         articleService.saveArticle(title, content, images, principal.getName());
     }
     @GetMapping("/list")
@@ -31,32 +31,23 @@ public class ArticleController {
     }
 
     @GetMapping("/mylist")
-    public List<ArticleResponseDto> getMyArticleList(@RequestParam(defaultValue = "0") int page, Principal principal) throws Exception {
+    public List<ArticleResponseDto> getMyArticleList(@RequestParam(defaultValue = "0") int page, Principal principal) throws IOException {
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(principal.getName());
         return articleService.getMyArticles(seniorUser.getUserId(), page);
     }
 
-    /*@PutMapping("/update{id}")
-    public Article updateArticle(@PathVariable Long id, @RequestBody NewArticleDto newArticleDto) throws Exception {
-        Optional<Article> op = articleService.getArticleById(id);
-        if (op.isEmpty()) {
-            throw new Exception();
-        }
-        Article article = op.get();
-        article.setTitle(newArticleDto.getTitle());
-        article.setContent(newArticleDto.getContent());
-        article.setUpdatedAt(LocalDateTime.now());
-        Article saved = articleService.saveArticle(article);
-        return saved;
-    }*/
+    @GetMapping("/search")
+    public List<ArticleResponseDto> searchArticleList(@RequestParam String keyword, @RequestParam(defaultValue = "0") int page) throws IOException {
+        return articleService.searchArticles(keyword,page);
+    }
 
     @DeleteMapping("/delete/{id}")
-    public void deleteArticle(@PathVariable Long id, Principal principal) throws Exception {
+    public void deleteArticle(@PathVariable Long id, Principal principal) throws IOException {
         articleService.deleteArticleById(id, principal.getName());
     }
 
     @PostMapping("/like/{id}")
-    public int likeArticle(@PathVariable Long id, Principal principal) throws Exception {
+    public int likeArticle(@PathVariable Long id, Principal principal) {
         return likeUserRelationService.clickLike(id, principal.getName());
     }
 }

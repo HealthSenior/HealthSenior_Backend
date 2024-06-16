@@ -18,9 +18,8 @@ public class LikeUserRelationService {
     private final SeniorUserService seniorUserService;
 
     @Transactional
-    public int clickLike(Long id, String name) throws Exception {
+    public int clickLike(Long id, String name) {
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
-
         int count = likeUserRelationRepository.countByArticleId(id);
         Optional<LikeUserRelation> ol = likeUserRelationRepository.isClickArticle(id, seniorUser.getUserId());
         if(ol.isPresent()) {

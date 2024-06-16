@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import out4ider.healthsenior.enums.Role;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity

@@ -1,61 +1,124 @@
 package out4ider.healthsenior.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 import out4ider.healthsenior.domain.Article;
-import out4ider.healthsenior.domain.Comment;
+import out4ider.healthsenior.domain.ImageFile;
 import out4ider.healthsenior.domain.SeniorUser;
-import out4ider.healthsenior.dto.NewCommentDto;
+import out4ider.healthsenior.dto.ArticleResponseDto;
+import out4ider.healthsenior.exception.NotAuthorizedException;
+import out4ider.healthsenior.exception.NotFoundElementException;
 import out4ider.healthsenior.repository.ArticleRepository;
-import out4ider.healthsenior.repository.CommentRepository;
-import out4ider.healthsenior.repository.SeniorUserRepository;
+import out4ider.healthsenior.repository.ImageFileRepository;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class CommentService {
-    private final CommentRepository commentRepository;
+@Slf4j
+public class ArticleService {
+    private final ArticleRepository articleRepository;
     private final SeniorUserService seniorUserService;
-    private final ArticleService articleService;
+    private final ImageFileRepository imageFileRepository;
+    private final String filePath = "/home/rosoa0475/HealthSenior_Backend/images/";
 
-    public int saveComment(Long articleId, NewCommentDto newCommentDto, String name) throws Exception {
-        Article article = articleService.getArticleById(articleId);
-        int count = commentRepository.countByArticleId(articleId);
+    @Transactional
+    public void saveArticle(String title, String content, List<MultipartFile> images, String name) throws IOException {
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
-        Comment comment = Comment.builder()
-                .createdAt(LocalDateTime.now())
-                .content(newCommentDto.getContent())
+        Article article = Article.builder()
+                .title(title)
+                .content(content)
                 .writer(seniorUser)
-                .article(article)
+                .createdAt(LocalDateTime.now())
+                .comments(new ArrayList<>())
+                .imageFiles(new ArrayList<>())
+                .likeUserRelations(new ArrayList<>())
                 .build();
-        commentRepository.save(comment);
-        seniorUser.createComment(comment);
-        article.createComment(comment);
-        return count+1;
-    }
-
-    public List<Comment> getAllComments(Long id) {
-        return commentRepository.findByArticleId(id);
-    }
-
-    public Optional<Comment> getCommentById(Long id) {
-        return commentRepository.findById(id);
-    }
-
-    public void deleteComment(Long id, String name) throws Exception {
-        Optional<Comment> oc = commentRepository.findById(id);
-        if (oc.isEmpty()) {
-            throw new Exception();
+        articleRepository.save(article);
+        seniorUser.createArticle(article);
+        if (!images.isEmpty()) {
+            UUID uuid = null;
+            for (MultipartFile image : images) {
+                uuid = UUID.randomUUID();
+                String fileName = uuid + image.getOriginalFilename();
+                ImageFile imageFile = ImageFile.builder()
+                        .fileName(fileName)
+                        .article(article)
+                        .build();
+                Files.createDirectories(Path.of(filePath));
+                article.addImage(imageFile);
+                imageFileRepository.save(imageFile);
+                image.transferTo(new File(filePath + fileName));
+            }
         }
-        Comment comment = oc.get();
-        if(!comment.getWriter().getOauth2Id().equals(name)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"삭제 권한이 없습니다.");
+    }
+
+    public List<ArticleResponseDto> getArticles(int page) throws IOException {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        List<Article> articles = articleRepository.findAll(pageable).getContent();
+        return getArticleResponseDtos(articles);
+    }
+
+    public List<ArticleResponseDto> searchArticles(String keyword, int page) throws IOException {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        List<Article> articles = articleRepository.findAllByTitleOrContent(keyword, pageable).getContent();
+        return getArticleResponseDtos(articles);
+    }
+
+    public List<ArticleResponseDto> getMyArticles(Long userId, int page) throws IOException {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        List<Article> articles = articleRepository.findAllByUserId(userId, pageable).getContent();
+        return getArticleResponseDtos(articles);
+    }
+
+    public List<ArticleResponseDto> getArticleResponseDtos(List<Article> articles) throws IOException {
+        List<ArticleResponseDto> articleResponseDtos = new ArrayList<>();
+        for (Article article : articles) {
+            List<byte[]> images = new ArrayList<>();
+            if (!article.getImageFiles().isEmpty()) {
+                for (ImageFile imageFile : article.getImageFiles()) {
+                    images.add(Files.readAllBytes(Path.of(filePath + imageFile.getFileName())));
+                }
+            }
+            articleResponseDtos.add(new ArticleResponseDto(article, images));
         }
-        commentRepository.deleteById(comment.getId());
+        return articleResponseDtos;
+    }
+
+    public Article getArticleById(Long id) {
+        Optional<Article> oa = articleRepository.findById(id);
+        if (oa.isEmpty()) {
+            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
+        }
+        return oa.get();
+    }
+
+    public void deleteArticleById(Long id, String name) throws IOException {
+        Article article = getArticleById(id);
+        if (!article.getWriter().getOauth2Id().equals(name)) {
+            throw new NotAuthorizedException(3, "Don't have permission to delete this article", HttpStatus.FORBIDDEN);
+        }
+        List<ImageFile> images = article.getImageFiles();
+        if (!images.isEmpty()) {
+            for (ImageFile imageFile : images) {
+                Files.deleteIfExists(Path.of(filePath + imageFile.getFileName()));
+            }
+        }
+        articleRepository.deleteById(id);
     }
 }

@@ -2,19 +2,19 @@ package out4ider.healthsenior.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 import out4ider.healthsenior.domain.Article;
-import out4ider.healthsenior.domain.CommunityChatRoom;
 import out4ider.healthsenior.domain.ImageFile;
 import out4ider.healthsenior.domain.SeniorUser;
 import out4ider.healthsenior.dto.ArticleResponseDto;
+import out4ider.healthsenior.exception.NotAuthorizedException;
+import out4ider.healthsenior.exception.NotFoundElementException;
 import out4ider.healthsenior.repository.ArticleRepository;
 import out4ider.healthsenior.repository.ImageFileRepository;
 
@@ -30,13 +30,15 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ArticleService {
     private final ArticleRepository articleRepository;
     private final SeniorUserService seniorUserService;
     private final ImageFileRepository imageFileRepository;
+    private final String filePath = "/home/rosoa0475/HealthSenior_Backend/images/";
 
     @Transactional
-    public void saveArticle(String title, String content, List<MultipartFile> images, String name) throws Exception {
+    public void saveArticle(String title, String content, List<MultipartFile> images, String name) throws IOException {
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
         Article article = Article.builder()
                 .title(title)
@@ -49,13 +51,10 @@ public class ArticleService {
                 .build();
         articleRepository.save(article);
         seniorUser.createArticle(article);
-        System.out.println(article.getId());
-        for (MultipartFile image : images) {
-            String filePath = "images/";
-            if (image.isEmpty()) {
-                continue;
-            } else {
-                UUID uuid = UUID.randomUUID();
+        if (!images.isEmpty()) {
+            UUID uuid = null;
+            for (MultipartFile image : images) {
+                uuid = UUID.randomUUID();
                 String fileName = uuid + image.getOriginalFilename();
                 ImageFile imageFile = ImageFile.builder()
                         .fileName(fileName)
@@ -75,15 +74,20 @@ public class ArticleService {
         return getArticleResponseDtos(articles);
     }
 
+    public List<ArticleResponseDto> searchArticles(String keyword, int page) throws IOException {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        List<Article> articles = articleRepository.findAllByTitleOrContent(keyword, pageable).getContent();
+        return getArticleResponseDtos(articles);
+    }
+
     public List<ArticleResponseDto> getMyArticles(Long userId, int page) throws IOException {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
-        List<Article> articles = articleRepository.findAllByUserId(userId,pageable).getContent();
+        List<Article> articles = articleRepository.findAllByUserId(userId, pageable).getContent();
         return getArticleResponseDtos(articles);
     }
 
     public List<ArticleResponseDto> getArticleResponseDtos(List<Article> articles) throws IOException {
         List<ArticleResponseDto> articleResponseDtos = new ArrayList<>();
-        String filePath = "images/";
         for (Article article : articles) {
             List<byte[]> images = new ArrayList<>();
             if (!article.getImageFiles().isEmpty()) {
@@ -96,18 +100,24 @@ public class ArticleService {
         return articleResponseDtos;
     }
 
-    public Article getArticleById(Long id) throws Exception {
+    public Article getArticleById(Long id) {
         Optional<Article> oa = articleRepository.findById(id);
-        if(oa.isEmpty()){
-            throw new Exception();
+        if (oa.isEmpty()) {
+            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
         }
         return oa.get();
     }
 
-    public void deleteArticleById(Long id, String name) throws Exception {
+    public void deleteArticleById(Long id, String name) throws IOException {
         Article article = getArticleById(id);
         if (!article.getWriter().getOauth2Id().equals(name)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제 권한이 없습니다.");
+            throw new NotAuthorizedException(3, "Don't have permission to delete this article", HttpStatus.FORBIDDEN);
+        }
+        List<ImageFile> images = article.getImageFiles();
+        if (!images.isEmpty()) {
+            for (ImageFile imageFile : images) {
+                Files.deleteIfExists(Path.of(filePath + imageFile.getFileName()));
+            }
         }
         articleRepository.deleteById(id);
     }

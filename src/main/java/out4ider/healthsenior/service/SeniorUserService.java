@@ -2,13 +2,13 @@ package out4ider.healthsenior.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import out4ider.healthsenior.domain.SeniorUser;
-import out4ider.healthsenior.domain.UserFcmToken;
 import out4ider.healthsenior.dto.UserDto;
 import out4ider.healthsenior.enums.Role;
+import out4ider.healthsenior.exception.NotFoundElementException;
 import out4ider.healthsenior.repository.SeniorUserRepository;
-import out4ider.healthsenior.repository.UserFcmRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,12 +19,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SeniorUserService {
     private final SeniorUserRepository seniorUserRepository;
-    private final UserFcmRepository userFcmRepository;
 
-    public SeniorUser findByOauth2Id(String oauth2Id) throws Exception {
+    public SeniorUser findByOauth2Id(String oauth2Id) {
         Optional<SeniorUser> byOauthId = seniorUserRepository.findByOauth2Id(oauth2Id);
         if (byOauthId.isEmpty()){
-            throw new Exception();
+            throw new NotFoundElementException(1, "That is not in DB", HttpStatus.NOT_FOUND);
         }
         return byOauthId.get();
     }
