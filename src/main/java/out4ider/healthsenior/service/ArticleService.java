@@ -35,7 +35,7 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final SeniorUserService seniorUserService;
     private final ImageFileRepository imageFileRepository;
-    private final String filePath = "/home/ubuntu/hsimage";
+    private final String filePath = "/home/ubuntu/hsimage/";
 
     @Transactional
     public void saveArticle(String title, String content, List<MultipartFile> images, String name) throws IOException {
