@@ -89,7 +89,7 @@ public class ArticleService {
         List<ArticleResponseDto> articleResponseDtos = new ArrayList<>();
         for (Article article : articles) {
             List<byte[]> images = new ArrayList<>();
-            if (!article.getImageFiles().isEmpty()) {
+            if (article.getImageFiles()!=null && article.getImageFiles().size()>0) {
                 for (ImageFile imageFile : article.getImageFiles()) {
                     images.add(Files.readAllBytes(Path.of(filePath + imageFile.getFileName())));
                 }
