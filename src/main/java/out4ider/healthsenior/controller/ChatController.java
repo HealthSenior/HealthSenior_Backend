@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Controller
+@RestController
 @Slf4j
 public class ChatController {
     private final CommunityChatRoomService communityChatRoomService;
