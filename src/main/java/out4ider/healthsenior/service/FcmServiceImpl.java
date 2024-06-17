@@ -34,7 +34,7 @@ public class FcmServiceImpl implements FcmService{
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         httpHeaders.set("Authorization", "Bearer " + getAccessToken());
         HttpEntity<String> entity = new HttpEntity<>(message, httpHeaders);
-        String API_URL = "https://fcm.googleapis.com/v1/projects/healthsenior/messages:send";
+        String API_URL = "https://fcm.googleapis.com/v1/projects/healthsenior-9a26a/messages:send";
         ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
         return response.getStatusCode() == HttpStatus.OK ? 1 : 0;
     }

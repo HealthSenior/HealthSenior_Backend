@@ -33,11 +33,19 @@ public class CommunityChatRoomService {
         return communityChatRoomRepository.save(communityChatRoom);
     }
 
-    public List<CommunityChatRoom> getChatRoomList(int page, Long userId){
+    public List<CommunityChatRoom> getChatRoomList(int page, String keyword, Long userId){
         Pageable pageable = PageRequest.of(page,10, Sort.by("startDate").descending());
 
-        return communityChatRoomRepository.findByChatRoomIdNotIn(userId,pageable).getContent();
+        return communityChatRoomRepository.findByChatRoomIdNotIn(userId,keyword,pageable).getContent();
     }
+
+    public List<CommunityChatRoom> getChatRoomListByCategory(String category,String keyword,int page,Long userId){
+        Pageable pageable = PageRequest.of(page,10, Sort.by("startDate").descending());
+
+        return communityChatRoomRepository.findByChatRoomIdNotInByCategory(userId,category,keyword,pageable).getContent();
+    }
+
+
 
     public CommunityChatRoom getChatRoom(Long chatRoomId) throws Exception {
         Optional<CommunityChatRoom> byId = communityChatRoomRepository.findById(chatRoomId);
@@ -47,9 +55,14 @@ public class CommunityChatRoomService {
         return byId.get();
     }
 
-    public List<CommunityChatRoom> getMyChatRoomList(int page, Long userId){
+    public List<CommunityChatRoom> getMyChatRoomList(int page,String keyword, Long userId){
         Pageable pageable = PageRequest.of(page,10,Sort.by("startDate").descending());
 
-        return communityChatRoomRepository.findAllByUserId(userId,pageable).getContent();
+        return communityChatRoomRepository.findAllByUserId(userId,keyword,pageable).getContent();
+    }
+
+    public List<CommunityChatRoom> getMyChatRoomListByCategory(String category, String keyword,int page,Long userId){
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
+        return communityChatRoomRepository.findAllByUserIdAndCategory(userId,category,keyword,pageable).getContent();
     }
 }
