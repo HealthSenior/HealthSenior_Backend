@@ -52,4 +52,9 @@ public class CommunityChatRoomService {
 
         return communityChatRoomRepository.findAllByUserId(userId,pageable).getContent();
     }
+
+    public List<CommunityChatRoom> getMyChatRoomListByCategory(String category,int page,Long userId){
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
+        return communityChatRoomRepository.findAllByUserIdAndCategory(userId,category,pageable).getContent();
+    }
 }

@@ -17,4 +17,7 @@ public interface CommunityChatRoomRepository extends JpaRepository<CommunityChat
 
     @Query("select c from CommunityChatRoom c join c.communityChatRelation m where m.seniorUser.userId = ?1")
     Page<CommunityChatRoom> findAllByUserId(Long userId,Pageable pageable);
+
+    @Query("select c from CommunityChatRoom c join c.communityChatRelation m where m.seniorUser.userId = ?1 and c.sportKind = ?2")
+    Page<CommunityChatRoom> findAllByUserIdAndCategory(Long userId, String category, Pageable pageable);
 }

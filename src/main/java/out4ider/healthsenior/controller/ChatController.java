@@ -97,6 +97,14 @@ public class ChatController {
         return myChatRoomList.stream().map(CommunityChatRoom::toResponseDto).collect(Collectors.toList());
     }
 
+    @GetMapping("/chatroom/mylist/{category}")
+    public List<ChatRoomResponseDto> myChatRoomListWithCategory(@PathVariable String category, @RequestParam(value = "page", defaultValue = "0") int page, Principal principal) throws Exception {
+        String name = principal.getName();
+        SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
+        List<CommunityChatRoom> myChatRoomListByCategory = communityChatRoomService.getMyChatRoomListByCategory(category, page, seniorUser.getUserId());
+        return myChatRoomListByCategory.stream().map(CommunityChatRoom::toResponseDto).collect(Collectors.toList());
+    }
+
     @ResponseBody
     @GetMapping("/chat/get-unread")
     public List<UnreadMessageDto> getUnread(Principal principal){
