@@ -81,27 +81,36 @@ public class ChatController {
 
     @ResponseBody
     @GetMapping("/chatroom/list")
-    public List<ChatRoomResponseDto> chatRoomList(@RequestParam(value = "page", defaultValue = "0") int page,  Principal principal) throws Exception {
+    public List<ChatRoomResponseDto> chatRoomList(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "keyword", defaultValue = "") String keyword,Principal principal) throws Exception {
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(principal.getName());
-        List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList(page,seniorUser.getUserId());
+        List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomList(page,keyword,seniorUser.getUserId());
+        return chatRoomList.stream().map(CommunityChatRoom::toResponseDto).collect(Collectors.toList());
+
+    }
+
+    @ResponseBody
+    @GetMapping("/chatroom/list/{category}")
+    public List<ChatRoomResponseDto> chatRoomList(@PathVariable String category, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "keyword", defaultValue = "") String keyword,  Principal principal) throws Exception {
+        SeniorUser seniorUser = seniorUserService.findByOauth2Id(principal.getName());
+        List<CommunityChatRoom> chatRoomList = communityChatRoomService.getChatRoomListByCategory(category,keyword,page,seniorUser.getUserId());
         return chatRoomList.stream().map(CommunityChatRoom::toResponseDto).collect(Collectors.toList());
 
     }
 
     @ResponseBody
     @GetMapping("/chatroom/mylist")
-    public List<ChatRoomResponseDto> myChatRoomList(@RequestParam(value = "page", defaultValue = "0") int page, Principal principal) throws Exception {
+    public List<ChatRoomResponseDto> myChatRoomList(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "keyword", defaultValue = "") String keyword, Principal principal) throws Exception {
         String name = principal.getName();
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
-        List<CommunityChatRoom> myChatRoomList = communityChatRoomService.getMyChatRoomList(page, seniorUser.getUserId());
+        List<CommunityChatRoom> myChatRoomList = communityChatRoomService.getMyChatRoomList(page,keyword, seniorUser.getUserId());
         return myChatRoomList.stream().map(CommunityChatRoom::toResponseDto).collect(Collectors.toList());
     }
 
     @GetMapping("/chatroom/mylist/{category}")
-    public List<ChatRoomResponseDto> myChatRoomListWithCategory(@PathVariable String category, @RequestParam(value = "page", defaultValue = "0") int page, Principal principal) throws Exception {
+    public List<ChatRoomResponseDto> myChatRoomListWithCategory(@PathVariable String category, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "keyword", defaultValue = "") String keyword, Principal principal) throws Exception {
         String name = principal.getName();
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(name);
-        List<CommunityChatRoom> myChatRoomListByCategory = communityChatRoomService.getMyChatRoomListByCategory(category, page, seniorUser.getUserId());
+        List<CommunityChatRoom> myChatRoomListByCategory = communityChatRoomService.getMyChatRoomListByCategory(category,keyword, page, seniorUser.getUserId());
         return myChatRoomListByCategory.stream().map(CommunityChatRoom::toResponseDto).collect(Collectors.toList());
     }
 
