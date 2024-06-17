@@ -12,7 +12,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("select a from Article a join a.writer w where w.userId=?1")
     Page<Article> findAllByUserId(Long userId, Pageable pageable);
 
-    @Query("select a from Article a where a.title like %?1% or a.content like %?1%")
+    @Query("select a from Article a where a.title like concat('%',?1,'%') or a.content like concat('%',?1,'%')")
     Page<Article> findAllByTitleOrContent(String keyword, Pageable pageable);
 
 }
