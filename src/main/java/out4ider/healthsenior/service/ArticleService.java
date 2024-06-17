@@ -75,7 +75,9 @@ public class ArticleService {
 
     public List<ArticleResponseDto> searchArticles(String keyword, int page) throws IOException {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
+        log.info("repo first" + "---keyword");
         List<Article> articles = articleRepository.findAllByTitleOrContent(keyword, pageable).getContent();
+        log.info("repo second");
         return getArticleResponseDtos(articles);
     }
 

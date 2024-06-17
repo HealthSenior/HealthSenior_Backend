@@ -1,6 +1,7 @@
 package out4ider.healthsenior.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import out4ider.healthsenior.domain.SeniorUser;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/article")
 @RequiredArgsConstructor
+@Slf4j
 public class ArticleController {
     private final SeniorUserService seniorUserService;
     private final ArticleService articleService;
@@ -37,12 +39,13 @@ public class ArticleController {
     }
 
     @GetMapping("/search")
-    public List<ArticleResponseDto> searchArticleList(@RequestParam String keyword, @RequestParam(defaultValue = "0") int page) throws IOException {
+    public List<ArticleResponseDto> searchArticleList(@RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") int page) throws IOException {
         return articleService.searchArticles(keyword,page);
     }
 
     @DeleteMapping("/delete/{id}")
     public void deleteArticle(@PathVariable Long id, Principal principal) throws IOException {
+        log.info("run controller");
         articleService.deleteArticleById(id, principal.getName());
     }
 
