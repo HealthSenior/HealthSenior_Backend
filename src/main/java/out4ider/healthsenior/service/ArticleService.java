@@ -67,13 +67,7 @@ public class ArticleService {
         }
     }
 
-    public List<ArticleResponseDto> getArticles(int page) throws IOException {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
-        List<Article> articles = articleRepository.findAll(pageable).getContent();
-        return getArticleResponseDtos(articles);
-    }
-
-    public List<ArticleResponseDto> searchArticles(String keyword, int page) throws IOException {
+    public List<ArticleResponseDto> getArticles(String keyword, int page) throws IOException {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
         List<Article> articles = articleRepository.findAllByTitleOrContent(keyword, pageable).getContent();
         return getArticleResponseDtos(articles);
