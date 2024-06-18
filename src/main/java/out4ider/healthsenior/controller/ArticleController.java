@@ -28,8 +28,8 @@ public class ArticleController {
         articleService.saveArticle(title, content, images, principal.getName());
     }
     @GetMapping("/list")
-    public List<ArticleResponseDto> getArticleList(@RequestParam(defaultValue = "0") int page) throws IOException {
-        return articleService.getArticles(page);
+    public List<ArticleResponseDto> getArticleList(@RequestParam String keyword, @RequestParam(defaultValue = "0") int page) throws IOException {
+        return articleService.getArticles(keyword, page);
     }
 
     @GetMapping("/mylist")
