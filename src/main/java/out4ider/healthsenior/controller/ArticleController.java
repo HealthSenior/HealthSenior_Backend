@@ -28,7 +28,7 @@ public class ArticleController {
         articleService.saveArticle(title, content, images, principal.getName());
     }
     @GetMapping("/list")
-    public List<ArticleResponseDto> getArticleList(@RequestParam String keyword, @RequestParam(defaultValue = "0") int page) throws IOException {
+    public List<ArticleResponseDto> getArticleList(@RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") int page) throws IOException {
         return articleService.getArticles(keyword, page);
     }
 
@@ -36,11 +36,6 @@ public class ArticleController {
     public List<ArticleResponseDto> getMyArticleList(@RequestParam(defaultValue = "0") int page, Principal principal) throws IOException {
         SeniorUser seniorUser = seniorUserService.findByOauth2Id(principal.getName());
         return articleService.getMyArticles(seniorUser.getUserId(), page);
-    }
-
-    @GetMapping("/search")
-    public List<ArticleResponseDto> searchArticleList(@RequestParam(defaultValue = "") String keyword, @RequestParam(defaultValue = "0") int page) throws IOException {
-        return articleService.searchArticles(keyword,page);
     }
 
     @DeleteMapping("/delete/{id}")
